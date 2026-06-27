@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Chi tiết việc làm')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div><p class="eyebrow" th:text="${job.company.name}"></p>
+            <h1 th:text="${job.title}"></h1>
+            <p th:text="${job.description}"></p></div>
+        <div class="actions"
+             th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}"><a
+                class="button button-secondary" th:href="@{/jobs/{id}/edit(id=${job.id})}">Chỉnh sửa</a>
+            <form th:if="${job.status.name() == 'OPEN'}" th:action="@{/jobs/{id}/close(id=${job.id})}" method="post">
+                <button class="button button-secondary" type="submit">Đóng tin</button>
+            </form>
+            <form th:action="@{/jobs/{id}/delete(id=${job.id})}" method="post"
+                  onsubmit="return confirm('Xóa tin này?')">
+                <button class="button button-danger" type="submit">Xóa tin</button>
+            </form>
+        </div>
+    </div>
+    <section class="detail-panel">
+        <dl class="detail-grid">
+            <div>
+                <dt>Công ty</dt>
+                <dd th:text="${job.company.name}"></dd>
+            </div>
+            <div>
+                <dt>Trạng thái</dt>
+                <dd th:text="${job.status}"></dd>
+            </div>
+            <div>
+                <dt>Loại việc</dt>
+                <dd th:text="${job.jobType}"></dd>
+            </div>
+            <div>
+                <dt>Địa điểm</dt>
+                <dd th:text="${job.location ?: '-'}"></dd>
+            </div>
+            <div>
+                <dt>Lương tối thiểu</dt>
+                <dd th:text="${job.salaryMin ?: '-'}"></dd>
+            </div>
+            <div>
+                <dt>Lương tối đa</dt>
+                <dd th:text="${job.salaryMax ?: '-'}"></dd>
+            </div>
+            <div>
+                <dt>Ngày đăng</dt>
+                <dd th:text="${job.postedDate}"></dd>
+            </div>
+            <div>
+                <dt>Hạn nộp</dt>
+                <dd th:text="${job.deadline ?: '-'}"></dd>
+            </div>
+        </dl>
+    </section>
+    <a class="text-link" th:href="@{/jobs}">Quay lại danh sách</a></main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

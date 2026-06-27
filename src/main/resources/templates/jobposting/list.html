@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Việc làm')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div><p class="eyebrow">Open positions</p>
+            <h1>Việc làm đang tuyển</h1>
+            <p>Tìm cơ hội theo tiêu đề và xem thông tin công ty.</p></div>
+        <a class="button"
+           th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}"
+           th:href="@{/jobs/new}">Đăng tin mới</a></div>
+    <form class="search-row" th:action="@{/jobs}" method="get"><input class="form-control" name="keyword"
+                                                                      th:value="${keyword}"
+                                                                      placeholder="Tìm theo tiêu đề">
+        <button class="button" type="submit">Tìm kiếm</button>
+    </form>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Vị trí</th>
+                <th>Công ty</th>
+                <th>Loại việc</th>
+                <th>Địa điểm</th>
+                <th>Mức lương</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="job : ${jobs}">
+                <td><strong th:text="${job.title}"></strong></td>
+                <td th:text="${job.company.name}"></td>
+                <td><span class="badge" th:text="${job.jobType}"></span></td>
+                <td th:text="${job.location ?: '-'}"></td>
+                <td th:text="${(job.salaryMin != null ? job.salaryMin : '-') + ' - ' + (job.salaryMax != null ? job.salaryMax : '-')}"></td>
+                <td><a class="button button-secondary button-small" th:href="@{/jobs/{id}(id=${job.id})}">Chi tiết</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(jobs)}">
+                <td colspan="6" class="empty-cell">Không tìm thấy tin tuyển dụng đang mở.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

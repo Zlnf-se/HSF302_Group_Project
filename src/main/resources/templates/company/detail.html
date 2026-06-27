@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Chi tiết công ty')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow" th:text="${company.industry}"></p>
+            <h1 th:text="${company.name}"></h1>
+            <p th:text="${company.profile != null ? company.profile.description : 'Chưa có hồ sơ công ty.'}"></p>
+        </div>
+        <div class="actions" th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}">
+            <a class="button button-secondary" th:href="@{/companies/{id}/edit(id=${company.id})}">Chỉnh sửa</a>
+            <form th:action="@{/companies/{id}/delete(id=${company.id})}" method="post"
+                  onsubmit="return confirm('Xóa công ty này?')">
+                <button class="button button-danger" type="submit">Xóa công ty</button>
+            </form>
+        </div>
+    </div>
+
+    <section class="detail-panel">
+        <dl class="detail-grid">
+            <div><dt>Website</dt><dd th:text="${company.website}"></dd></div>
+            <div><dt>Ngành nghề</dt><dd th:text="${company.industry}"></dd></div>
+            <div><dt>Trụ sở</dt><dd th:text="${company.profile != null ? company.profile.headquarters : '-'}"></dd></div>
+            <div><dt>Số nhân viên</dt><dd th:text="${company.profile != null and company.profile.employeeCount != null ? company.profile.employeeCount : '-'}"></dd></div>
+            <div><dt>Năm thành lập</dt><dd th:text="${company.profile != null and company.profile.foundedYear != null ? company.profile.foundedYear : '-'}"></dd></div>
+        </dl>
+    </section>
+    <a class="text-link" th:href="@{/companies}">Quay lại danh sách</a>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Quản lý người dùng')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading"><p class="eyebrow">Admin</p><h1>Quản lý người dùng</h1><p>Khóa tài khoản, đổi vai trò hoặc xóa người dùng.</p></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>ID</th><th>Người dùng</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}"></td>
+                <td><strong th:text="${user.fullName}"></strong><br><span class="muted" th:text="${user.username}"></span></td>
+                <td th:text="${user.email}"></td>
+                <td><span class="badge" th:text="${user.role.name}"></span></td>
+                <td><span class="badge" th:classappend="${!user.enabled} ? ' badge-disabled'" th:text="${user.enabled ? 'Đang hoạt động' : 'Đã khóa'}"></span></td>
+                <td class="actions">
+                    <a class="button button-secondary button-small" th:href="@{/admin/users/{id}/toggle-enabled(id=${user.id})}" th:text="${user.enabled ? 'Khóa' : 'Mở khóa'}"></a>
+                    <a class="button button-secondary button-small" th:href="@{/admin/users/{id}/edit-role(id=${user.id})}">Đổi role</a>
+                    <a class="button button-danger button-small" th:href="@{/admin/users/{id}/delete(id=${user.id})}" onclick="return confirm('Xóa người dùng này?')">Xóa</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head(${editMode ? 'Sửa tin tuyển dụng' : 'Đăng tin tuyển dụng'})}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading"><p class="eyebrow">Job posting</p>
+        <h1 th:text="${editMode ? 'Sửa tin tuyển dụng' : 'Đăng tin tuyển dụng'}"></h1></div>
+    <form class="form-panel form-panel-wide" th:action="${editMode} ? @{/jobs/{id}/edit(id=${jobId})} : @{/jobs}"
+          th:object="${jobPostingForm}" method="post">
+        <div class="alert alert-error" th:if="${#fields.hasGlobalErrors()}"><p th:each="e : ${#fields.globalErrors()}"
+                                                                               th:text="${e}"></p></div>
+        <div class="form-grid">
+            <div class="form-group form-grid-full"><label>Tiêu đề</label><input class="form-control"
+                                                                                th:field="*{title}"><span
+                    class="field-error" th:errors="*{title}"></span></div>
+            <div class="form-group"><label>Công ty</label><select class="form-control" th:field="*{companyId}">
+                <option value="">-- Chọn công ty --</option>
+                <option th:each="c:${companies}" th:value="${c.id}" th:text="${c.name}"></option>
+            </select></div>
+            <div class="form-group"><label>Loại việc</label><select class="form-control" th:field="*{jobType}">
+                <option value="">-- Chọn loại --</option>
+                <option th:each="t:${jobTypes}" th:value="${t.name()}" th:text="${t.name()}"></option>
+            </select></div>
+            <div class="form-group"><label>Địa điểm</label><input class="form-control" th:field="*{location}"></div>
+            <div class="form-group"><label>Hạn nộp</label><input class="form-control" type="date"
+                                                                 th:field="*{deadline}"></div>
+            <div class="form-group"><label>Lương tối thiểu</label><input class="form-control" type="number" step="0.01"
+                                                                         min="0" th:field="*{salaryMin}"></div>
+            <div class="form-group"><label>Lương tối đa</label><input class="form-control" type="number" step="0.01"
+                                                                      min="0" th:field="*{salaryMax}"></div>
+            <div class="form-group form-grid-full"><label>Mô tả</label><textarea class="form-control" rows="6"
+                                                                                 th:field="*{description}"></textarea>
+            </div>
+            <fieldset class="form-group form-grid-full skill-picker">
+                <legend>Kỹ năng yêu cầu</legend>
+                <label th:each="s:${skills}"><input type="checkbox" th:field="*{skillIds}" th:value="${s.id}"> <span
+                        th:text="${s.name}"></span></label></fieldset>
+        </div>
+        <div class="actions">
+            <button class="button" type="submit" th:text="${editMode ? 'Lưu thay đổi' : 'Đăng tin'}"></button>
+            <a class="button button-secondary" th:href="@{/jobs}">Hủy</a></div>
+    </form>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

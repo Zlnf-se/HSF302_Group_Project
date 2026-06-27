@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' | Recruitment Web System'">Recruitment Web System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+</head>
+<body>
+<header class="site-header" th:fragment="header">
+    <div class="container nav-row">
+        <a class="brand" th:href="@{/}">Recruitment Web System</a>
+        <nav aria-label="Điều hướng chính">
+            <a th:href="@{/}">Trang chủ</a>
+            <a th:href="@{/companies}">Công ty</a>
+            <a th:href="@{/jobs}">Việc làm</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">Hồ sơ của tôi</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}" th:href="@{/candidates}">Ứng viên</a>
+            <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}" th:href="@{/admin/users}">Quản lý người dùng</a>
+            <span class="session-user" th:if="${session.loggedInUser != null}"
+                  th:text="${session.loggedInUser.fullName}">Người dùng</span>
+            <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Đăng nhập</a>
+            <a th:if="${session.loggedInUser != null}" th:href="@{/auth/logout}">Đăng xuất</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container page-content" th:fragment="content">
+    <p>Nội dung trang được đặt tại đây.</p>
+</div>
+
+<footer class="site-footer" th:fragment="footer">
+    <div class="container">Recruitment Web System · Spring MVC · Thymeleaf · SQL Server</div>
+</footer>
+</body>
+</html>

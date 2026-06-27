@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Công ty')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow">Company directory</p>
+            <h1>Danh sách công ty</h1>
+            <p>Thông tin doanh nghiệp và hồ sơ tuyển dụng.</p>
+        </div>
+        <a class="button" th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}"
+           th:href="@{/companies/new}">Thêm công ty</a>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr><th>Tên công ty</th><th>Ngành</th><th>Trụ sở</th><th>Số nhân viên</th><th>Thao tác</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="company : ${companies}">
+                <td><strong th:text="${company.name}"></strong><br><span class="muted" th:text="${company.website}"></span></td>
+                <td th:text="${company.industry}"></td>
+                <td th:text="${company.profile != null ? company.profile.headquarters : '-'}"></td>
+                <td th:text="${company.profile != null and company.profile.employeeCount != null ? company.profile.employeeCount : '-'}"></td>
+                <td><a class="button button-secondary button-small" th:href="@{/companies/{id}(id=${company.id})}">Xem chi tiết</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(companies)}"><td colspan="5" class="empty-cell">Chưa có công ty nào.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

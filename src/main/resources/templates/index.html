@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Trang chủ')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading">
+        <p class="eyebrow">Phase 1</p>
+        <h1>Recruitment Web System</h1>
+        <p>Khung ứng dụng Spring MVC ba lớp đã sẵn sàng để phát triển các nghiệp vụ tuyển dụng.</p>
+        <p th:if="${session.loggedInUser != null}">
+            Xin chào <strong th:text="${session.loggedInUser.fullName}">Người dùng</strong>,
+            vai trò <strong th:text="${session.loggedInUser.roleName}">CANDIDATE</strong>.
+        </p>
+    </div>
+
+    <section class="module-grid" aria-label="Các phân hệ">
+        <article class="module-card"><h2>Công ty</h2><p>Quản lý công ty và hồ sơ doanh nghiệp.</p></article>
+        <article class="module-card"><h2>Việc làm</h2><p>Đăng và theo dõi tin tuyển dụng.</p></article>
+        <article class="module-card"><h2>Ứng viên</h2><p>Quản lý hồ sơ và kỹ năng ứng viên.</p></article>
+        <article class="module-card"><h2>Ứng tuyển</h2><p>Theo dõi application và lịch phỏng vấn.</p></article>
+    </section>
+
+    <section class="status-panel">
+        <h2>Cấu hình Phase 1</h2>
+        <ul>
+            <li>Java 17 và Spring Boot 3.2</li>
+            <li>Spring MVC, Thymeleaf, JPA và Validation</li>
+            <li>SQL Server với Hibernate ddl-auto=update</li>
+            <li>BCrypt PasswordEncoder, không bật Spring Security</li>
+            <li>Không sử dụng Lombok</li>
+            <li>Đăng ký, đăng nhập và phân quyền session ở Phase 2</li>
+        </ul>
+    </section>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
