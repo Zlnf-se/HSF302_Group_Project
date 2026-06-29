@@ -1,0 +1,34 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Recruitment Web System" [ref=e4] [cursor=pointer]:
+        - /url: /;jsessionid=330DB1750BF845CC605B35D8CE435AB6
+      - navigation "Điều hướng chính" [ref=e5]:
+        - link "Trang chủ" [ref=e6] [cursor=pointer]:
+          - /url: /;jsessionid=330DB1750BF845CC605B35D8CE435AB6
+        - link "Công ty" [ref=e7] [cursor=pointer]:
+          - /url: /companies;jsessionid=330DB1750BF845CC605B35D8CE435AB6
+        - link "Việc làm" [ref=e8] [cursor=pointer]:
+          - /url: /jobs;jsessionid=330DB1750BF845CC605B35D8CE435AB6
+        - link "Đăng nhập" [ref=e9] [cursor=pointer]:
+          - /url: /login;jsessionid=330DB1750BF845CC605B35D8CE435AB6
+  - main [ref=e10]:
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: Tài khoản
+      - heading "Đăng nhập" [level=1] [ref=e13]
+      - paragraph [ref=e14]: Đăng nhập bằng tài khoản đã đăng ký.
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]: Tên đăng nhập
+        - textbox "Tên đăng nhập" [ref=e18]
+      - generic [ref=e19]:
+        - generic [ref=e20]: Mật khẩu
+        - textbox "Mật khẩu" [ref=e21]
+      - generic [ref=e22]:
+        - button "Đăng nhập" [ref=e23] [cursor=pointer]
+        - link "Tạo tài khoản" [ref=e24] [cursor=pointer]:
+          - /url: /auth/register;jsessionid=330DB1750BF845CC605B35D8CE435AB6
+        - link "Quên mật khẩu?" [ref=e25] [cursor=pointer]:
+          - /url: /password-reset;jsessionid=330DB1750BF845CC605B35D8CE435AB6
+  - contentinfo [ref=e26]:
+    - generic [ref=e27]: Recruitment Web System · Spring MVC · Thymeleaf · SQL Server

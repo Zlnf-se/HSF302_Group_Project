@@ -1,0 +1,96 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Recruitment Web System" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - navigation "Điều hướng chính" [ref=e5]:
+        - link "Trang chủ" [ref=e6] [cursor=pointer]:
+          - /url: /
+        - link "Công ty" [ref=e7] [cursor=pointer]:
+          - /url: /companies
+        - link "Việc làm" [ref=e8] [cursor=pointer]:
+          - /url: /jobs
+        - link "Ứng viên" [ref=e9] [cursor=pointer]:
+          - /url: /candidates
+        - link "Recruitment Manager" [ref=e10] [cursor=pointer]:
+          - /url: /profile
+        - link "Đăng xuất" [ref=e11] [cursor=pointer]:
+          - /url: /logout
+  - main [ref=e12]:
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - paragraph [ref=e15]: Open positions
+        - heading "Việc làm đang tuyển" [level=1] [ref=e16]
+        - paragraph [ref=e17]: Tìm cơ hội theo tiêu đề và xem thông tin công ty.
+      - link "Đăng tin mới" [ref=e18] [cursor=pointer]:
+        - /url: /jobs/new
+    - generic [ref=e19]:
+      - textbox "Tìm theo tiêu đề" [ref=e20]
+      - button "Tìm kiếm" [ref=e21] [cursor=pointer]
+    - table [ref=e23]:
+      - rowgroup [ref=e24]:
+        - row "Vị trí Công ty Loại việc Địa điểm Mức lương" [ref=e25]:
+          - columnheader "Vị trí" [ref=e26]
+          - columnheader "Công ty" [ref=e27]
+          - columnheader "Loại việc" [ref=e28]
+          - columnheader "Địa điểm" [ref=e29]
+          - columnheader "Mức lương" [ref=e30]
+          - columnheader [ref=e31]
+      - rowgroup [ref=e32]:
+        - row "QA Engineer TechCorp Inc. CONTRACT Ho Chi Minh 1200.00 - 2200.00 Chi tiết" [ref=e33]:
+          - cell "QA Engineer" [ref=e34]:
+            - strong [ref=e35]: QA Engineer
+          - cell "TechCorp Inc." [ref=e36]
+          - cell "CONTRACT" [ref=e37]:
+            - generic [ref=e38]: CONTRACT
+          - cell "Ho Chi Minh" [ref=e39]
+          - cell "1200.00 - 2200.00" [ref=e40]
+          - cell "Chi tiết" [ref=e41]:
+            - link "Chi tiết" [ref=e42] [cursor=pointer]:
+              - /url: /jobs/6
+        - row "Senior Java Developer TechCorp Inc. FULL_TIME Ho Chi Minh 2000.00 - 3500.00 Chi tiết" [ref=e43]:
+          - cell "Senior Java Developer" [ref=e44]:
+            - strong [ref=e45]: Senior Java Developer
+          - cell "TechCorp Inc." [ref=e46]
+          - cell "FULL_TIME" [ref=e47]:
+            - generic [ref=e48]: FULL_TIME
+          - cell "Ho Chi Minh" [ref=e49]
+          - cell "2000.00 - 3500.00" [ref=e50]
+          - cell "Chi tiết" [ref=e51]:
+            - link "Chi tiết" [ref=e52] [cursor=pointer]:
+              - /url: /jobs/1
+        - row "Frontend Developer TechCorp Inc. REMOTE Remote 1500.00 - 2500.00 Chi tiết" [ref=e53]:
+          - cell "Frontend Developer" [ref=e54]:
+            - strong [ref=e55]: Frontend Developer
+          - cell "TechCorp Inc." [ref=e56]
+          - cell "REMOTE" [ref=e57]:
+            - generic [ref=e58]: REMOTE
+          - cell "Remote" [ref=e59]
+          - cell "1500.00 - 2500.00" [ref=e60]
+          - cell "Chi tiết" [ref=e61]:
+            - link "Chi tiết" [ref=e62] [cursor=pointer]:
+              - /url: /jobs/2
+        - row "Data Analyst FinanceHub Ltd. FULL_TIME Ha Noi 1200.00 - 2000.00 Chi tiết" [ref=e63]:
+          - cell "Data Analyst" [ref=e64]:
+            - strong [ref=e65]: Data Analyst
+          - cell "FinanceHub Ltd." [ref=e66]
+          - cell "FULL_TIME" [ref=e67]:
+            - generic [ref=e68]: FULL_TIME
+          - cell "Ha Noi" [ref=e69]
+          - cell "1200.00 - 2000.00" [ref=e70]
+          - cell "Chi tiết" [ref=e71]:
+            - link "Chi tiết" [ref=e72] [cursor=pointer]:
+              - /url: /jobs/3
+        - row "DevOps Engineer FinanceHub Ltd. FULL_TIME Ha Noi 1800.00 - 3000.00 Chi tiết" [ref=e73]:
+          - cell "DevOps Engineer" [ref=e74]:
+            - strong [ref=e75]: DevOps Engineer
+          - cell "FinanceHub Ltd." [ref=e76]
+          - cell "FULL_TIME" [ref=e77]:
+            - generic [ref=e78]: FULL_TIME
+          - cell "Ha Noi" [ref=e79]
+          - cell "1800.00 - 3000.00" [ref=e80]
+          - cell "Chi tiết" [ref=e81]:
+            - link "Chi tiết" [ref=e82] [cursor=pointer]:
+              - /url: /jobs/4
+  - contentinfo [ref=e83]:
+    - generic [ref=e84]: Recruitment Web System · Spring MVC · Thymeleaf · SQL Server

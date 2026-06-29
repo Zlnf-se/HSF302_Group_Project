@@ -10,6 +10,7 @@
             <p th:text="${job.description}"></p></div>
         <div class="actions"
              th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}"><a
+                class="button button-secondary" th:href="@{/jobs/{id}/applications(id=${job.id})}">Xem ứng viên</a><a
                 class="button button-secondary" th:href="@{/jobs/{id}/edit(id=${job.id})}">Chỉnh sửa</a>
             <form th:if="${job.status.name() == 'OPEN'}" th:action="@{/jobs/{id}/close(id=${job.id})}" method="post">
                 <button class="button button-secondary" type="submit">Đóng tin</button>
