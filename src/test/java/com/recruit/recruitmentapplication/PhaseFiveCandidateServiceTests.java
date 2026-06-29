@@ -78,7 +78,7 @@ class PhaseFiveCandidateServiceTests {
         form.setJobType("FULL_TIME"); form.setSalaryMin(new BigDecimal("1000")); form.setSalaryMax(new BigDecimal("2000"));
         form.setDeadline(LocalDate.now().plusDays(20)); form.setCompanyId(company.getId());
         form.setSkillIds(Set.of(javaSkill.getId(), docker.getId()));
-        JobPosting job = jobPostingService.create(form);
+        JobPosting job = jobPostingService.create(form, "DRAFT", null);
         assertEquals(Set.of("Java", "Docker"), job.getRequiredSkills().stream().map(Skill::getName).collect(java.util.stream.Collectors.toSet()));
     }
 

@@ -58,6 +58,26 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             """)
     List<Application> findByJobWithCandidate(@Param("jobId") Long jobId);
 
+    @Query("""
+            SELECT a FROM Application a
+            JOIN FETCH a.candidate
+            JOIN FETCH a.jobPosting jp
+            JOIN FETCH jp.company
+            WHERE a.id = :id
+            """)
+    Optional<Application> findDetailById(@Param("id") Long id);
+
+    @Query("""
+            SELECT DISTINCT a FROM Application a
+            JOIN a.interviews i
+            JOIN FETCH a.candidate
+            JOIN FETCH a.jobPosting jp
+            JOIN FETCH jp.company
+            WHERE i.interviewer.id = :interviewerId
+            ORDER BY a.appliedAt DESC
+            """)
+    List<Application> findAssignedToInterviewer(@Param("interviewerId") Long interviewerId);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE Application a SET a.status = :status WHERE a.id = :id")

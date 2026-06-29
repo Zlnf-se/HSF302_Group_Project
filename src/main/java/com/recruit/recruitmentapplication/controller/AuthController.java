@@ -164,6 +164,9 @@ public class AuthController {
         if (Role.RECRUITER.equals(roleName)) {
             return "/jobs";
         }
+        if (Role.INTERVIEWER.equals(roleName)) {
+            return "/interviews/assigned";
+        }
         if (Role.CANDIDATE.equals(roleName)) {
             return "/candidates/me";
         }
