@@ -4,7 +4,7 @@
 
 - Java 17, Spring Boot 3.2, Maven
 - Spring MVC, Thymeleaf, Spring Data JPA, Jakarta Validation
-- SQL Server (`recruitment_web_db`)
+- SQL Server (`recruitment_db`)
 - BCrypt through `spring-security-crypto`; no Spring Security filter chain
 - No Lombok
 
@@ -40,7 +40,7 @@ Application 1 - N Interview
 Create the database before starting the application:
 
 ```sql
-CREATE DATABASE recruitment_web_db;
+CREATE DATABASE recruitment_db;
 ```
 
 Update `spring.datasource.username` and `spring.datasource.password` in

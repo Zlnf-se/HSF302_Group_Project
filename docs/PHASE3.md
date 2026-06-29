@@ -40,7 +40,7 @@ Both passwords are stored as BCrypt hashes.
 
 ## SQL Server and tests
 
-Production uses the Microsoft SQL Server JDBC driver and database `recruitment_web_db`.
+Production uses the Microsoft SQL Server JDBC driver and database `recruitment_db`.
 Lombok is not used.
 
 ```powershell
