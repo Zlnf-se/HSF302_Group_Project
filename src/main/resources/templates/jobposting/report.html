@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Báo cáo Tuyển dụng')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading">
+        <p class="eyebrow">Pipeline Report</p>
+        <h1>Báo cáo Tiến trình: <span th:text="${report.jobTitle}"></span></h1>
+        <a class="text-link" th:href="@{/jobs/{id}(id=${report.jobId})}">&larr; Quay lại chi tiết công việc</a>
+    </div>
+
+    <section class="detail-panel" style="margin-bottom: 30px;">
+        <h3>Biểu đồ ứng viên theo giai đoạn</h3>
+        <div style="width: 100%; max-width: 800px; margin: 0 auto; padding: 20px;">
+            <canvas id="pipelineChart"></canvas>
+        </div>
+    </section>
+
+    <div class="table-wrap">
+        <h3>Danh sách chi tiết</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Tên ứng viên</th>
+                <th>Giai đoạn hiện tại</th>
+                <th>Ngày cập nhật</th>
+                <th>Người phỏng vấn</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="app : ${report.applications}">
+                <td><strong th:text="${app.candidateName}"></strong></td>
+                <td><span class="badge" th:text="${app.status}"></span></td>
+                <td th:text="${app.daysInStage + ' ngày trước'}"></td>
+                <td th:text="${app.interviewerName ?: '-'}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(report.applications)}">
+                <td colspan="4" class="empty-cell">Chưa có ứng viên nào ứng tuyển cho vị trí này.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        /* Lấy dữ liệu từ backend (PipelineReportDto) */
+        var stageData = /*[[${report.stageCounts}]]*/ {};
+
+        var labels = Object.keys(stageData);
+        var dataValues = Object.values(stageData);
+
+        var ctx = document.getElementById('pipelineChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng ứng viên',
+                    data: dataValues,
+                    backgroundColor: '#4a90e2',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y', /* Chuyển thành biểu đồ thanh ngang */
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 } /* Hiển thị số nguyên */
+                    }
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

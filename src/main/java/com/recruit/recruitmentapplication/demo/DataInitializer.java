@@ -110,6 +110,7 @@ public class DataInitializer implements CommandLineRunner {
         JobPosting seniorJavaDeveloper = seedJobPosting(
                 techCorp,
                 "Senior Java Developer",
+                "Engineering",
                 "Develop backend services for the recruitment platform",
                 "HCM",
                 JobType.FULL_TIME,
@@ -120,6 +121,7 @@ public class DataInitializer implements CommandLineRunner {
         JobPosting frontendDeveloper = seedJobPosting(
                 techCorp,
                 "Frontend Developer",
+                "Engineering",
                 "Build user interfaces for candidates and employers",
                 "Remote",
                 JobType.REMOTE,
@@ -130,6 +132,7 @@ public class DataInitializer implements CommandLineRunner {
         JobPosting dataAnalyst = seedJobPosting(
                 financeHub,
                 "Data Analyst",
+                "Data & Analytics",
                 "Analyze finance and recruitment data",
                 "Ha Noi",
                 JobType.FULL_TIME,
@@ -140,6 +143,7 @@ public class DataInitializer implements CommandLineRunner {
         JobPosting devOpsEngineer = seedJobPosting(
                 financeHub,
                 "DevOps Engineer",
+                "Engineering",
                 "Maintain cloud infrastructure and CI/CD",
                 "Ha Noi",
                 JobType.FULL_TIME,
@@ -150,6 +154,7 @@ public class DataInitializer implements CommandLineRunner {
         JobPosting uxUiDesigner = seedJobPosting(
                 creativeStudio,
                 "UX/UI Designer",
+                "Design",
                 "Design candidate and recruiter experiences",
                 "Da Nang",
                 JobType.FULL_TIME,
@@ -325,6 +330,7 @@ public class DataInitializer implements CommandLineRunner {
     private JobPosting seedJobPosting(
             Company company,
             String title,
+            String department,
             String description,
             String location,
             JobType jobType,
@@ -335,6 +341,7 @@ public class DataInitializer implements CommandLineRunner {
         return jobPostingRepository.findByTitleAndCompany_Name(title, company.getName()).orElseGet(() -> {
             JobPosting posting = new JobPosting(
                     title,
+                    department,
                     description,
                     location,
                     jobType,
@@ -343,7 +350,7 @@ public class DataInitializer implements CommandLineRunner {
                     LocalDate.now().plusDays(deadlineDays)
             );
             posting.setPostedDate(LocalDate.now());
-            posting.setStatus(PostingStatus.OPEN);
+            posting.setStatus(PostingStatus.ACTIVE);
 
             company.addJobPosting(posting);
             return jobPostingRepository.save(posting);
