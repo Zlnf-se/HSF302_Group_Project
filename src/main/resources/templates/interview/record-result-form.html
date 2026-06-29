@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Đánh giá phỏng vấn')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <nav class="breadcrumb">
+        <a class="text-link" th:href="@{/applications/{id}(id=${interview.application.id})}">&larr; Chi tiết ứng tuyển</a>
+    </nav>
+    <div class="page-heading">
+        <p class="eyebrow" th:text="${interview.application.jobPosting.title}">Vị trí</p>
+        <h1>Đánh giá phỏng vấn</h1>
+        <p>
+            <span th:text="'Ứng viên: ' + ${interview.application.candidate.name}">Ứng viên</span>
+            · <span th:text="'Lịch hẹn: ' + ${interview.scheduledAt != null ? #temporals.format(interview.scheduledAt, 'dd/MM/yyyy HH:mm') : '-'}"></span>
+        </p>
+    </div>
+
+    <div class="alert alert-error" th:if="${evaluationError}" th:text="${evaluationError}"></div>
+
+    <!-- Read-only view when already evaluated -->
+    <section th:if="${interview.evaluated}" class="form-panel">
+        <div class="alert alert-success"
+             th:text="'Bạn đã gửi đánh giá vào ngày ' + ${interview.evaluatedAt != null ? #temporals.format(interview.evaluatedAt, 'dd/MM/yyyy') : ''} + '.'"></div>
+        <p class="rating-stars">
+            <span th:each="i : ${#numbers.sequence(1,5)}" th:text="${i <= interview.rating ? '★' : '☆'}">★</span>
+            <span class="muted" th:text="'(' + ${interview.rating} + '/5)'"></span>
+        </p>
+        <p th:text="${interview.feedback}">Nhận xét</p>
+    </section>
+
+    <!-- Editable form -->
+    <form th:unless="${interview.evaluated}" class="form-panel"
+          th:action="@{/interviews/{id}/evaluate(id=${interview.id})}"
+          th:object="${evaluationForm}" method="post">
+        <div class="form-group">
+            <label>Đánh giá (sao)</label>
+            <div class="star-rating">
+                <th:block th:each="i : ${#numbers.sequence(5,1)}">
+                    <input type="radio" th:id="'star' + ${i}" name="rating" th:value="${i}"
+                           th:checked="${evaluationForm.rating != null and evaluationForm.rating == i}" required>
+                    <label th:for="'star' + ${i}">★</label>
+                </th:block>
+            </div>
+            <span class="field-error" th:errors="*{rating}"></span>
+        </div>
+        <div class="form-group">
+            <label for="feedback">Nhận xét</label>
+            <textarea class="form-control" id="feedback" th:field="*{feedback}" rows="6" required></textarea>
+            <span class="field-error" th:errors="*{feedback}"></span>
+        </div>
+        <div class="alert">Sau khi gửi, đánh giá không thể chỉnh sửa hoặc thu hồi.</div>
+        <div class="actions">
+            <button class="button" type="submit">Gửi đánh giá</button>
+            <a class="button button-secondary" th:href="@{/applications/{id}(id=${interview.application.id})}">Hủy</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Lên lịch phỏng vấn')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <nav class="breadcrumb">
+        <a class="text-link" th:href="@{/applications/{id}(id=${app.id})}">&larr; Chi tiết ứng tuyển</a>
+    </nav>
+    <div class="page-heading">
+        <p class="eyebrow" th:text="${app.jobPosting.title}">Vị trí</p>
+        <h1>Phân công phỏng vấn</h1>
+        <p th:text="'Ứng viên: ' + ${app.candidate.name}">Ứng viên</p>
+    </div>
+
+    <div class="alert alert-error" th:if="${scheduleError}" th:text="${scheduleError}"></div>
+    <div class="alert" th:if="${interviewers.isEmpty()}">
+        Không có Interviewer nào khả dụng. Hãy yêu cầu Admin tạo tài khoản Interviewer trước.
+    </div>
+
+    <form class="form-panel" th:action="@{/applications/{id}/interviews(id=${app.id})}"
+          th:object="${interviewScheduleForm}" method="post">
+        <div class="form-group">
+            <label for="interviewerId">Người phỏng vấn</label>
+            <select class="form-control" id="interviewerId" th:field="*{interviewerId}" required
+                    th:disabled="${interviewers.isEmpty()}">
+                <option value="">-- Chọn người phỏng vấn --</option>
+                <option th:each="iv : ${interviewers}" th:value="${iv.id}" th:text="${iv.fullName}"></option>
+            </select>
+            <span class="field-error" th:errors="*{interviewerId}"></span>
+        </div>
+        <div class="form-group">
+            <label for="date">Ngày phỏng vấn</label>
+            <input class="form-control" id="date" type="date" th:field="*{date}" required>
+            <span class="field-error" th:errors="*{date}"></span>
+        </div>
+        <div class="form-group">
+            <label for="time">Giờ phỏng vấn</label>
+            <input class="form-control" id="time" type="time" th:field="*{time}" required>
+            <p class="helper-text">Định dạng HH:mm (24 giờ).</p>
+            <span class="field-error" th:errors="*{time}"></span>
+        </div>
+        <div class="form-group">
+            <label for="location">Địa điểm hoặc link họp</label>
+            <input class="form-control" id="location" type="text" th:field="*{location}" maxlength="500">
+            <p class="helper-text">Không bắt buộc. Tên phòng hoặc URL cuộc họp.</p>
+            <span class="field-error" th:errors="*{location}"></span>
+        </div>
+        <div class="actions">
+            <button class="button" type="submit" th:disabled="${interviewers.isEmpty()}">Phân công &amp; Lên lịch</button>
+            <a class="button button-secondary" th:href="@{/applications/{id}(id=${app.id})}">Hủy</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
