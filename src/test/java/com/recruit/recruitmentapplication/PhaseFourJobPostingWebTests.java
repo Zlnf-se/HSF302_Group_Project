@@ -33,7 +33,7 @@ class PhaseFourJobPostingWebTests {
     @Test
     void anonymousIsRedirectedAndCandidateCanRead() throws Exception {
         JobPosting job = jobRepository.findByTitleAndCompany_Name("Senior Java Developer", "TechCorp Inc.").orElseThrow();
-        mockMvc.perform(get("/jobs")).andExpect(redirectedUrl("/auth/login"));
+        mockMvc.perform(get("/jobs")).andExpect(redirectedUrl("/login"));
         mockMvc.perform(get("/jobs").session(session(Role.CANDIDATE)))
                 .andExpect(status().isOk()).andExpect(view().name("jobposting/list"))
                 .andExpect(content().string(containsString("Senior Java Developer")))

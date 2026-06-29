@@ -54,7 +54,8 @@ class PhaseTwoWebTests {
     void registrationHashesPasswordAndAssignsCandidateRole() {
         RegisterForm form = new RegisterForm();
         form.setUsername("phase2candidate");
-        form.setPassword("secret123");
+        form.setPassword("SecretA123");
+        form.setConfirmPassword("SecretA123");
         form.setEmail("phase2candidate@example.com");
         form.setFullName("Phase Two Candidate");
 
@@ -62,8 +63,8 @@ class PhaseTwoWebTests {
 
         assertEquals(Role.CANDIDATE, user.getRole().getName());
         assertTrue(user.isEnabled());
-        assertFalse("secret123".equals(user.getPassword()));
-        assertTrue(passwordUtil.matches("secret123", user.getPassword()));
+        assertFalse("SecretA123".equals(user.getPassword()));
+        assertTrue(passwordUtil.matches("SecretA123", user.getPassword()));
     }
 
     @Test
@@ -71,7 +72,8 @@ class PhaseTwoWebTests {
     void administratorCanChangeRoleAndToggleAccountStatus() {
         RegisterForm form = new RegisterForm();
         form.setUsername("managedcandidate");
-        form.setPassword("secret123");
+        form.setPassword("SecretA123");
+        form.setConfirmPassword("SecretA123");
         form.setEmail("managedcandidate@example.com");
         form.setFullName("Managed Candidate");
         User user = userService.register(form);
@@ -88,15 +90,15 @@ class PhaseTwoWebTests {
 
     @Test
     void authPagesArePublicAndAdminPageRequiresLogin() throws Exception {
-        mockMvc.perform(get("/auth/login"))
+        mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Đăng nhập")));
-        mockMvc.perform(get("/auth/register"))
+        mockMvc.perform(get("/register"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Đăng ký")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Create your account")));
         mockMvc.perform(get("/admin/users"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/auth/login"));
+                .andExpect(redirectedUrl("/login"));
     }
 
     @Test
