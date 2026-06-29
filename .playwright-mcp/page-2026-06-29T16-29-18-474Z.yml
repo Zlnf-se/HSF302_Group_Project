@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Recruitment Web System" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - navigation "Điều hướng chính" [ref=e5]:
+        - link "Trang chủ" [ref=e6] [cursor=pointer]:
+          - /url: /
+        - link "Công ty" [ref=e7] [cursor=pointer]:
+          - /url: /companies
+        - link "Việc làm" [ref=e8] [cursor=pointer]:
+          - /url: /jobs
+        - link "Phỏng vấn được giao" [ref=e9] [cursor=pointer]:
+          - /url: /interviews/assigned
+        - link "Ivan Interviewer" [ref=e10] [cursor=pointer]:
+          - /url: /profile
+        - link "Đăng xuất" [ref=e11] [cursor=pointer]:
+          - /url: /logout
+  - main [ref=e12]:
+    - generic [ref=e13]:
+      - paragraph [ref=e14]: "403"
+      - heading "Không có quyền truy cập" [level=1] [ref=e15]
+      - paragraph [ref=e16]: Tài khoản hiện tại không có quyền mở trang này.
+      - link "Về trang chủ" [ref=e17] [cursor=pointer]:
+        - /url: /
+  - contentinfo [ref=e18]:
+    - generic [ref=e19]: Recruitment Web System · Spring MVC · Thymeleaf · SQL Server

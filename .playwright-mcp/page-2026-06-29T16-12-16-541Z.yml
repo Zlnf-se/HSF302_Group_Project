@@ -1,0 +1,83 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Recruitment Web System" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - navigation "Điều hướng chính" [ref=e5]:
+        - link "Trang chủ" [ref=e6] [cursor=pointer]:
+          - /url: /
+        - link "Công ty" [ref=e7] [cursor=pointer]:
+          - /url: /companies
+        - link "Việc làm" [ref=e8] [cursor=pointer]:
+          - /url: /jobs
+        - link "Ứng viên" [ref=e9] [cursor=pointer]:
+          - /url: /candidates
+        - link "Recruitment Manager" [ref=e10] [cursor=pointer]:
+          - /url: /profile
+        - link "Đăng xuất" [ref=e11] [cursor=pointer]:
+          - /url: /logout
+  - main [ref=e12]:
+    - navigation [ref=e13]:
+      - link "← Chi tiết việc làm" [ref=e14] [cursor=pointer]:
+        - /url: /jobs/1
+    - generic [ref=e15]:
+      - paragraph [ref=e16]: TechCorp Inc.
+      - heading "Senior Java Developer OPEN" [level=2] [ref=e17]:
+        - text: Senior Java Developer
+        - generic [ref=e18]: OPEN
+      - paragraph [ref=e19]: Quản lý ứng viên theo từng giai đoạn tuyển dụng.
+    - generic [ref=e20]:
+      - link "Tất cả 1" [ref=e21] [cursor=pointer]:
+        - /url: /jobs/1/applications
+        - text: Tất cả
+        - generic [ref=e22]: "1"
+      - link "Đã nộp 0" [ref=e23] [cursor=pointer]:
+        - /url: /jobs/1/applications?stage=APPLIED
+        - text: Đã nộp
+        - generic [ref=e24]: "0"
+      - link "Sàng lọc 0" [ref=e25] [cursor=pointer]:
+        - /url: /jobs/1/applications?stage=SCREENING
+        - text: Sàng lọc
+        - generic [ref=e26]: "0"
+      - link "Phỏng vấn 0" [ref=e27] [cursor=pointer]:
+        - /url: /jobs/1/applications?stage=INTERVIEW
+        - text: Phỏng vấn
+        - generic [ref=e28]: "0"
+      - link "Đề nghị 1" [ref=e29] [cursor=pointer]:
+        - /url: /jobs/1/applications?stage=OFFER
+        - text: Đề nghị
+        - generic [ref=e30]: "1"
+      - link "Đã tuyển 0" [ref=e31] [cursor=pointer]:
+        - /url: /jobs/1/applications?stage=HIRED
+        - text: Đã tuyển
+        - generic [ref=e32]: "0"
+      - link "Từ chối 0" [ref=e33] [cursor=pointer]:
+        - /url: /jobs/1/applications?stage=REJECTED
+        - text: Từ chối
+        - generic [ref=e34]: "0"
+      - link "Đã rút 0" [ref=e35] [cursor=pointer]:
+        - /url: /jobs/1/applications?stage=WITHDRAWN
+        - text: Đã rút
+        - generic [ref=e36]: "0"
+    - table [ref=e38]:
+      - rowgroup [ref=e39]:
+        - row "Ứng viên Ngày nộp Số ngày ở giai đoạn Trạng thái" [ref=e40]:
+          - columnheader "Ứng viên" [ref=e41]
+          - columnheader "Ngày nộp" [ref=e42]
+          - columnheader "Số ngày ở giai đoạn" [ref=e43]
+          - columnheader "Trạng thái" [ref=e44]
+          - columnheader [ref=e45]
+      - rowgroup [ref=e46]:
+        - row "Alice Nguyen alice@example.com 29/06/2026 0 ngày Đề nghị Mở" [ref=e47]:
+          - cell "Alice Nguyen alice@example.com" [ref=e48]:
+            - strong [ref=e49]: Alice Nguyen
+            - text: alice@example.com
+          - cell "29/06/2026" [ref=e50]
+          - cell "0 ngày" [ref=e51]
+          - cell "Đề nghị" [ref=e52]:
+            - generic [ref=e53]: Đề nghị
+          - cell "Mở" [ref=e54]:
+            - link "Mở" [ref=e55] [cursor=pointer]:
+              - /url: /applications/1
+  - contentinfo [ref=e56]:
+    - generic [ref=e57]: Recruitment Web System · Spring MVC · Thymeleaf · SQL Server

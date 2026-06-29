@@ -72,6 +72,7 @@ public class DataInitializer implements CommandLineRunner {
         Role candidateRole = seedRole(Role.CANDIDATE);
         seedAdmin(adminRole);
         User recruiter = seedRecruiter(recruiterRole);
+        seedRecruiter(recruiterRole);
         User ivanInterviewer = seedUser("ivan", "Ivan@123", "ivan@recruit.com", "Ivan Interviewer", interviewerRole);
         User aliceUser = seedUser("alice", "Alice@123", "alice@example.com", "Alice Nguyen", candidateRole);
         User bobUser = seedUser("bob", "Bob@123", "bob@example.com", "Bob Tran", candidateRole);
