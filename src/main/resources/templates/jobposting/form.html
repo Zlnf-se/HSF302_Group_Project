@@ -97,7 +97,7 @@
             <div class="actions" style="margin-top: 20px;">
                 <button class="button button-secondary" type="submit" name="action" value="DRAFT" th:if="${not editMode or jobPostingForm.status == 'DRAFT'}">Lưu nháp</button>
 
-                <button class="button" type="submit" name="action" value="PUBLISH" th:if="${not editMode or jobPostingForm.status == 'DRAFT'}">Đăng tin (Publish)</button>
+                <button class="button" type="submit" name="action" value="PUBLISH" th:if="${editMode and jobPostingForm.status == 'DRAFT'}">Đăng tin (Publish)</button>
 
                 <button class="button" type="submit" name="action" value="UPDATE" th:if="${editMode and jobPostingForm.status == 'ACTIVE'}">Lưu thay đổi</button>
 
