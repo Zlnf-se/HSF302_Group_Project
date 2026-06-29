@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' | Recruitment Web System'">Recruitment Web System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+</head>
+<body>
+<header class="site-header" th:fragment="header">
+    <div class="container nav-row">
+        <a class="brand" th:href="@{/}">Recruitment Web System</a>
+        <nav aria-label="Main navigation">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/companies}">Companies</a>
+            <a th:href="@{/jobs}">Jobs</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/applications/my}">My Applications</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">My Profile</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}" th:href="@{/candidates}">Candidates</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'ADMIN'}" th:href="@{/admin/users}">Users</a>
+            <span class="session-user" th:if="${session.loggedInUser != null}"
+                  th:text="${session.loggedInUser.fullName}">User</span>
+            <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Login</a>
+            <a th:if="${session.loggedInUser != null}" th:href="@{/auth/logout}">Logout</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container page-content" th:fragment="content">
+    <p>Page content goes here.</p>
+</div>
+
+<footer class="site-footer" th:fragment="footer">
+    <div class="container">Recruitment Web System - Spring MVC - Thymeleaf - SQL Server</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Ứng viên')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading"><p class="eyebrow">Candidate directory</p>
+        <h1>Danh sách ứng viên</h1>
+        <p>Hồ sơ và kỹ năng chuyên môn.</p></div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Ứng viên</th>
+                <th>Vị trí hiện tại</th>
+                <th>Kinh nghiệm</th>
+                <th>Kỹ năng</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c:${candidates}">
+                <td><strong th:text="${c.name}"></strong><br><span class="muted" th:text="${c.email}"></span></td>
+                <td th:text="${c.profile != null ? c.profile.currentTitle : '-'}"></td>
+                <td th:text="${c.profile != null and c.profile.yearsOfExperience != null ? c.profile.yearsOfExperience + ' năm' : '-'}"></td>
+                <td><span class="badge skill-badge" th:each="s:${c.skills}" th:text="${s.name}"></span></td>
+                <td><a class="button button-secondary button-small" th:href="@{/candidates/{id}(id=${c.id})}">Chi
+                    tiết</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

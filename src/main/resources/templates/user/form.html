@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Đổi vai trò')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading"><p class="eyebrow">Admin</p><h1>Đổi vai trò</h1><p th:text="${user.fullName + ' (' + user.username + ')'}"></p></div>
+    <form class="form-panel" th:action="@{/admin/users/{id}/edit-role(id=${user.id})}" th:object="${userRoleForm}" method="post">
+        <div class="form-group">
+            <label for="roleName">Vai trò</label>
+            <select class="form-control" id="roleName" th:field="*{roleName}">
+                <option th:each="role : ${roles}" th:value="${role.name}" th:text="${role.name}"></option>
+            </select>
+            <span class="field-error" th:errors="*{roleName}"></span>
+        </div>
+        <button class="button" type="submit">Lưu thay đổi</button>
+        <a class="button button-secondary" th:href="@{/admin/users}">Hủy</a>
+    </form>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

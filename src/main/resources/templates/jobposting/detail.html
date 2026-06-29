@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Job Detail')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow" th:text="${job.company.name}">Company</p>
+            <h1 th:text="${job.title}">Job title</h1>
+            <p>
+                <span th:text="${job.company.industry ?: 'Department'}">Department</span>
+                <span> - </span>
+                <span th:text="${job.location ?: '-'}">Location</span>
+                <span th:if="${job.deadline != null}"> - Deadline </span>
+                <span th:if="${job.deadline != null}" th:text="${job.deadline}">2026-12-31</span>
+            </p>
+        </div>
+        <div class="actions"
+             th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}">
+            <a class="button button-secondary" th:href="@{/jobs/{id}/edit(id=${job.id})}">Edit</a>
+            <form th:if="${job.status.name() == 'OPEN'}" th:action="@{/jobs/{id}/close(id=${job.id})}" method="post">
+                <button class="button button-secondary" type="submit">Close</button>
+            </form>
+            <form th:action="@{/jobs/{id}/delete(id=${job.id})}" method="post"
+                  onsubmit="return confirm('Delete this job posting?')">
+                <button class="button button-danger" type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-success" th:if="${param.applied}">
+        Your application has been submitted successfully.
+        <a class="text-link" th:href="@{/applications/my}">Track its status in My Applications.</a>
+    </div>
+
+    <section class="detail-panel">
+        <dl class="detail-grid">
+            <div>
+                <dt>Company</dt>
+                <dd th:text="${job.company.name}">Company</dd>
+            </div>
+            <div>
+                <dt>Status</dt>
+                <dd th:text="${job.status}">OPEN</dd>
+            </div>
+            <div>
+                <dt>Type</dt>
+                <dd th:text="${job.jobType}">FULL_TIME</dd>
+            </div>
+            <div>
+                <dt>Location</dt>
+                <dd th:text="${job.location ?: '-'}">Remote</dd>
+            </div>
+            <div>
+                <dt>Salary min</dt>
+                <dd th:text="${job.salaryMin ?: '-'}">-</dd>
+            </div>
+            <div>
+                <dt>Salary max</dt>
+                <dd th:text="${job.salaryMax ?: '-'}">-</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="content-section">
+        <h2>Job description</h2>
+        <p th:text="${job.description ?: 'No description provided.'}">Description</p>
+    </section>
+
+    <section class="content-section" th:if="${!#sets.isEmpty(job.requiredSkills)}">
+        <h2>Required skills</h2>
+        <div class="skill-list">
+            <span class="badge skill-badge" th:each="skill : ${job.requiredSkills}" th:text="${skill.name}">Java</span>
+        </div>
+    </section>
+
+    <section class="form-panel form-panel-wide apply-panel">
+        <div class="alert alert-error" th:if="${job.status.name() != 'OPEN'}">
+            This position is no longer accepting applications.
+        </div>
+        <div class="alert alert-info" th:if="${session.loggedInUser == null and job.status.name() == 'OPEN'}">
+            Login or create an account to apply.
+            <a class="text-link" th:href="@{/auth/login}">Login</a>
+            <span>or</span>
+            <a class="text-link" th:href="@{/auth/register}">Create Account</a>
+        </div>
+        <div class="alert alert-info" th:if="${candidateUser and alreadyApplied}">
+            You have already applied for this position.
+            <a class="text-link" th:href="@{/applications/my}">Open My Applications</a>
+        </div>
+        <div th:if="${candidateUser and !alreadyApplied and job.status.name() == 'OPEN'}">
+            <h2>Apply Now</h2>
+            <div class="alert alert-error" th:if="${applyError != null}" th:text="${applyError}">Upload error</div>
+            <form th:action="@{/jobs/{id}/apply(id=${job.id})}" method="post" enctype="multipart/form-data" th:object="${applicationForm}">
+                <div class="form-group">
+                    <label for="coverLetter">Cover letter</label>
+                    <textarea id="coverLetter" class="form-control" rows="5" th:field="*{coverLetter}"
+                              placeholder="Optional message for the hiring team"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="cvFile">CV file</label>
+                    <input id="cvFile" class="form-control" type="file" name="cvFile" accept=".pdf,.docx" required>
+                    <p class="help-text">PDF or DOCX only. Maximum 5 MB.</p>
+                </div>
+                <button class="button" type="submit">Submit Application</button>
+            </form>
+        </div>
+    </section>
+
+    <a class="text-link" th:href="@{/jobs}">Back to open positions</a>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

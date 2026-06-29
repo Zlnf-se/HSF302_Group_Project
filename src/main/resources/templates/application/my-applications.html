@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('My Applications')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow">Candidate Portal</p>
+            <h1>My Applications</h1>
+            <p>Track each submission and withdraw early-stage applications when needed.</p>
+        </div>
+        <a class="button button-secondary" th:href="@{/jobs}">Browse Open Positions</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${param.withdrawn}">Your application has been withdrawn.</div>
+
+    <nav class="tab-row" aria-label="Application status filters">
+        <a th:classappend="${selectedStatus == 'ALL'} ? 'active'" th:href="@{/applications/my(status='ALL')}">All</a>
+        <a th:each="status : ${statuses}" th:text="${status}"
+           th:classappend="${selectedStatus == status.name()} ? 'active'"
+           th:href="@{/applications/my(status=${status.name()})}">SUBMITTED</a>
+    </nav>
+
+    <div class="table-wrap" th:if="${!#lists.isEmpty(applications)}">
+        <table>
+            <thead>
+            <tr>
+                <th>Job title</th>
+                <th>Department</th>
+                <th>Submitted date</th>
+                <th>Current status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="app : ${applications}">
+                <td><a class="text-link" th:href="@{/jobs/{id}(id=${app.jobPosting.id})}"
+                       th:text="${app.jobPosting.title}">Job title</a></td>
+                <td th:text="${app.jobPosting.company.industry ?: '-'}">Department</td>
+                <td th:text="${#temporals.format(app.appliedAt, 'yyyy-MM-dd HH:mm')}">2026-06-29</td>
+                <td><span class="badge" th:text="${app.status}">SUBMITTED</span></td>
+                <td>
+                    <form th:if="${applicationService.canWithdraw(app)}"
+                          th:action="@{/applications/{id}/withdraw(id=${app.id})}" method="post"
+                          onsubmit="return confirm('Withdraw this application?')">
+                        <button class="button button-secondary button-small" type="submit">Withdraw</button>
+                    </form>
+                    <span class="muted" th:if="${!applicationService.canWithdraw(app)}">No actions</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <section class="placeholder" th:if="${#lists.isEmpty(applications)}">
+        <h2 th:if="${selectedStatus == 'ALL'}">You haven't applied for any positions yet.</h2>
+        <h2 th:if="${selectedStatus != 'ALL'}">No applications at this stage.</h2>
+        <a class="button" th:href="@{/jobs}">Browse Open Positions</a>
+    </section>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

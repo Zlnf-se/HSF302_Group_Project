@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Open Positions')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow">Candidate Portal</p>
+            <h1>Open Positions</h1>
+            <p>Browse active openings and choose the role that fits your next move.</p>
+        </div>
+        <a class="button"
+           th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}"
+           th:href="@{/jobs/new}">Create New Job</a>
+    </div>
+
+    <div class="alert alert-info" th:if="${session.loggedInUser == null}">
+        Login or create an account to apply for positions.
+        <a class="text-link" th:href="@{/auth/login}">Login</a>
+        <span>or</span>
+        <a class="text-link" th:href="@{/auth/register}">Create Account</a>
+    </div>
+
+    <form class="filter-panel" th:action="@{/jobs}" method="get">
+        <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Search by job title">
+        <select class="form-control" name="department">
+            <option value="">All departments</option>
+            <option th:each="item : ${departments}" th:value="${item}" th:text="${item}"
+                    th:selected="${item == department}"></option>
+        </select>
+        <select class="form-control" name="location">
+            <option value="">All locations</option>
+            <option th:each="item : ${locations}" th:value="${item}" th:text="${item}"
+                    th:selected="${item == location}"></option>
+        </select>
+        <button class="button" type="submit">Filter</button>
+    </form>
+
+    <section class="job-card-grid" th:if="${!#lists.isEmpty(jobs)}">
+        <article class="job-card" th:each="job : ${jobs}">
+            <div>
+                <p class="eyebrow" th:text="${job.company.industry ?: 'Department'}">Department</p>
+                <h2 th:text="${job.title}">Job title</h2>
+                <p class="muted" th:text="${job.company.name}">Company</p>
+            </div>
+            <dl class="compact-meta">
+                <div>
+                    <dt>Location</dt>
+                    <dd th:text="${job.location ?: '-'}">Remote</dd>
+                </div>
+                <div th:if="${job.deadline != null}">
+                    <dt>Deadline</dt>
+                    <dd th:text="${job.deadline}">2026-12-31</dd>
+                </div>
+            </dl>
+            <a class="button button-secondary" th:href="@{/jobs/{id}(id=${job.id})}">View Details</a>
+        </article>
+    </section>
+
+    <section class="placeholder" th:if="${#lists.isEmpty(jobs)}">
+        <h2>There are currently no open positions. Please check back later.</h2>
+        <p class="muted" th:if="${keyword != '' or department != '' or location != ''}">No open positions match your current filters.</p>
+    </section>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

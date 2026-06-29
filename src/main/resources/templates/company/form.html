@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head(${editMode ? 'Chỉnh sửa công ty' : 'Thêm công ty'})}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading">
+        <p class="eyebrow">Company profile</p>
+        <h1 th:text="${editMode ? 'Chỉnh sửa công ty' : 'Thêm công ty'}"></h1>
+        <p>Nhập thông tin công ty và hồ sơ trong cùng một biểu mẫu.</p>
+    </div>
+
+    <form class="form-panel form-panel-wide"
+          th:action="${editMode} ? @{/companies/{id}/edit(id=${companyId})} : @{/companies}"
+          th:object="${companyForm}" method="post">
+        <div class="alert alert-error" th:if="${#fields.hasGlobalErrors()}">
+            <p th:each="error : ${#fields.globalErrors()}" th:text="${error}"></p>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="name">Tên công ty</label>
+                <input class="form-control" id="name" type="text" th:field="*{name}" maxlength="200">
+                <span class="field-error" th:errors="*{name}"></span>
+            </div>
+            <div class="form-group">
+                <label for="industry">Ngành nghề</label>
+                <input class="form-control" id="industry" type="text" th:field="*{industry}" maxlength="100">
+                <span class="field-error" th:errors="*{industry}"></span>
+            </div>
+            <div class="form-group form-grid-full">
+                <label for="website">Website</label>
+                <input class="form-control" id="website" type="text" th:field="*{website}" maxlength="200">
+                <span class="field-error" th:errors="*{website}"></span>
+            </div>
+            <div class="form-group form-grid-full">
+                <label for="description">Mô tả</label>
+                <textarea class="form-control" id="description" th:field="*{description}" maxlength="2000" rows="5"></textarea>
+                <span class="field-error" th:errors="*{description}"></span>
+            </div>
+            <div class="form-group">
+                <label for="headquarters">Trụ sở</label>
+                <input class="form-control" id="headquarters" type="text" th:field="*{headquarters}" maxlength="200">
+                <span class="field-error" th:errors="*{headquarters}"></span>
+            </div>
+            <div class="form-group">
+                <label for="employeeCount">Số nhân viên</label>
+                <input class="form-control" id="employeeCount" type="number" min="0" th:field="*{employeeCount}">
+                <span class="field-error" th:errors="*{employeeCount}"></span>
+            </div>
+            <div class="form-group">
+                <label for="foundedYear">Năm thành lập</label>
+                <input class="form-control" id="foundedYear" type="number" min="1800" max="2100" th:field="*{foundedYear}">
+                <span class="field-error" th:errors="*{foundedYear}"></span>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="button" type="submit" th:text="${editMode ? 'Lưu thay đổi' : 'Tạo công ty'}"></button>
+            <a class="button button-secondary" th:href="${editMode} ? @{/companies/{id}(id=${companyId})} : @{/companies}">Hủy</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

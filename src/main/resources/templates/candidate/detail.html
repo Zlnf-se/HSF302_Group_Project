@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Chi tiết ứng viên')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading"><p class="eyebrow"
+                                 th:text="${candidate.profile != null ? candidate.profile.currentTitle : 'Candidate'}"></p>
+        <h1 th:text="${candidate.name}"></h1>
+        <p th:text="${candidate.profile != null ? candidate.profile.resumeSummary : 'Chưa có phần giới thiệu.'}"></p>
+    </div>
+    <section class="detail-panel">
+        <dl class="detail-grid">
+            <div>
+                <dt>Email</dt>
+                <dd th:text="${candidate.email}"></dd>
+            </div>
+            <div>
+                <dt>Điện thoại</dt>
+                <dd th:text="${candidate.phone ?: '-'}"></dd>
+            </div>
+            <div>
+                <dt>Kinh nghiệm</dt>
+                <dd th:text="${candidate.profile != null and candidate.profile.yearsOfExperience != null ? candidate.profile.yearsOfExperience + ' năm' : '-'}"></dd>
+            </div>
+            <div>
+                <dt>Học vấn</dt>
+                <dd th:text="${candidate.profile != null ? candidate.profile.educationLevel : '-'}"></dd>
+            </div>
+            <div>
+                <dt>LinkedIn</dt>
+                <dd th:text="${candidate.profile != null ? candidate.profile.linkedinUrl : '-'}"></dd>
+            </div>
+        </dl>
+        <div class="skill-list"><span class="badge skill-badge" th:each="s:${candidate.skills}"
+                                      th:text="${s.name}"></span></div>
+    </section>
+    <a class="text-link" th:href="@{/candidates}">Quay lại danh sách</a></main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
