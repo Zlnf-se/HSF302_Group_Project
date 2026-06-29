@@ -42,7 +42,26 @@ public class AuthInterceptor implements HandlerInterceptor {
             response.sendRedirect(request.getContextPath() + "/error/403");
             return false;
         }
+        if (isRecruitmentAreaDenied(request, loggedInUser)) {
+            response.sendRedirect(request.getContextPath() + "/error/403");
+            return false;
+        }
         return true;
+    }
+
+    private boolean isRecruitmentAreaDenied(HttpServletRequest request, SessionUser user) {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+
+        // Job applicant list is staff-only (HR Manager / Admin).
+        if (path.startsWith("/jobs/") && path.endsWith("/applications")) {
+            return !(Role.ADMIN.equals(user.getRoleName()) || Role.RECRUITER.equals(user.getRoleName()));
+        }
+        // Pipeline detail and interview screens: never for Candidates.
+        // Row-level access (assigned interviewer, evaluation owner) is enforced in controllers.
+        if (path.startsWith("/applications") || path.startsWith("/interviews")) {
+            return Role.CANDIDATE.equals(user.getRoleName());
+        }
+        return false;
     }
 
     private boolean isCompanyWriteRequest(HttpServletRequest request) {
