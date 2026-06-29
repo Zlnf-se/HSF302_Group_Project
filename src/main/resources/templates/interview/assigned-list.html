@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Phỏng vấn được giao')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading">
+        <p class="eyebrow">Interviewer</p>
+        <h1>Phỏng vấn được giao</h1>
+        <p>Các ứng viên bạn được phân công phỏng vấn.</p>
+    </div>
+
+    <div class="table-wrap" th:if="${!applications.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>Ứng viên</th>
+                <th>Vị trí</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${applications}">
+                <td><strong th:text="${a.candidate.name}">Tên</strong></td>
+                <td th:text="${a.jobPosting.title}">Vị trí</td>
+                <td>
+                    <span th:classappend="${T(com.recruit.recruitmentapplication.util.PipelineStages).badgeClass(a.status)}"
+                          th:text="${T(com.recruit.recruitmentapplication.util.PipelineStages).label(a.status)}">Trạng thái</span>
+                </td>
+                <td><a class="button button-secondary button-small" th:href="@{/applications/{id}(id=${a.id})}">Mở</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="muted" th:if="${applications.isEmpty()}">Bạn chưa được phân công phỏng vấn nào.</p>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
