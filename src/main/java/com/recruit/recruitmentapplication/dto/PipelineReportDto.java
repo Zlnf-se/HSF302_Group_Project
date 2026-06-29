@@ -1,7 +1,10 @@
 package com.recruit.recruitmentapplication.dto;
 
 import com.recruit.recruitmentapplication.entity.Application.ApplicationStatus;
+import com.recruit.recruitmentapplication.util.PipelineStages;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -12,6 +15,7 @@ public class PipelineReportDto {
     private int total;
 
     private Map<ApplicationStatus, Long> statusCounts = new LinkedHashMap<>();
+    private List<Row> applications = new ArrayList<>();
 
     public PipelineReportDto() {}
 
@@ -60,4 +64,39 @@ public class PipelineReportDto {
     public void setTotal(int total) { this.total = total; }
     public Map<ApplicationStatus, Long> getStatusCounts() { return statusCounts; }
     public void setStatusCounts(Map<ApplicationStatus, Long> statusCounts) { this.statusCounts = statusCounts; }
+
+    public List<Row> getApplications() { return applications; }
+    public void setApplications(List<Row> applications) {
+        this.applications = applications == null ? new ArrayList<>() : applications;
+    }
+    public void addApplication(Row row) { this.applications.add(row); }
+
+    /** Stage counts keyed by Vietnamese label, for the bar chart. */
+    public Map<String, Long> getStageCounts() {
+        Map<String, Long> labelled = new LinkedHashMap<>();
+        for (Map.Entry<ApplicationStatus, Long> entry : statusCounts.entrySet()) {
+            labelled.put(PipelineStages.label(entry.getKey()), entry.getValue());
+        }
+        return labelled;
+    }
+
+    /** One candidate row in the report table. */
+    public static class Row {
+        private final String candidateName;
+        private final ApplicationStatus status;
+        private final long daysInStage;
+        private final String interviewerName;
+
+        public Row(String candidateName, ApplicationStatus status, long daysInStage, String interviewerName) {
+            this.candidateName = candidateName;
+            this.status = status;
+            this.daysInStage = daysInStage;
+            this.interviewerName = interviewerName;
+        }
+
+        public String getCandidateName() { return candidateName; }
+        public ApplicationStatus getStatus() { return status; }
+        public long getDaysInStage() { return daysInStage; }
+        public String getInterviewerName() { return interviewerName; }
+    }
 }

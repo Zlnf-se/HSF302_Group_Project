@@ -21,7 +21,7 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     List<JobPosting> findByTitleContainingIgnoreCase(String keyword);
 
     @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company "
-            + "WHERE jp.status = 'OPEN' AND LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "WHERE jp.status = 'ACTIVE' AND LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) "
             + "ORDER BY jp.postedDate DESC")
     List<JobPosting> findOpenJobsByTitle(@Param("keyword") String keyword);
 
@@ -47,7 +47,7 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     Optional<JobPosting> findByTitleAndCompany_Name(String title, String companyName);
 
-    @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE jp.status = 'OPEN' ORDER BY jp.postedDate DESC")
+    @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE jp.status = 'ACTIVE' ORDER BY jp.postedDate DESC")
     List<JobPosting> findOpenJobsWithCompany();
 
     @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE jp.id = :id")
@@ -62,13 +62,13 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     @Query("""
             SELECT DISTINCT jp FROM JobPosting jp
             JOIN jp.requiredSkills s
-            WHERE s.name = :skillName AND jp.status = 'OPEN'
+            WHERE s.name = :skillName AND jp.status = 'ACTIVE'
             """)
     List<JobPosting> findOpenJobsBySkill(@Param("skillName") String skillName);
 
     @Query("""
             SELECT jp FROM JobPosting jp
-            WHERE jp.salaryMin >= :min AND jp.salaryMax <= :max AND jp.status = 'OPEN'
+            WHERE jp.salaryMin >= :min AND jp.salaryMax <= :max AND jp.status = 'ACTIVE'
             """)
     List<JobPosting> findByOpenSalaryRange(@Param("min") BigDecimal min, @Param("max") BigDecimal max);
 
@@ -88,13 +88,13 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     @Query(value = """
             SELECT jp.* FROM job_postings jp
             WHERE jp.posted_date >= DATEADD(day, (:days * -1), CAST(CURRENT_TIMESTAMP AS date))
-              AND jp.status = 'OPEN'
+              AND jp.status = 'ACTIVE'
             """, nativeQuery = true)
     List<JobPosting> findRecentOpenJobs(@Param("days") int days);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
-    @Query("UPDATE JobPosting jp SET jp.status = 'CLOSED' WHERE jp.deadline < :today AND jp.status = 'OPEN'")
+    @Query("UPDATE JobPosting jp SET jp.status = 'CLOSED' WHERE jp.deadline < :today AND jp.status = 'ACTIVE'")
     int closeExpiredPostings(@Param("today") LocalDate today);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -104,6 +104,9 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company ORDER BY jp.postedDate DESC")
     List<JobPosting> findAllWithCompany();
+
+    @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE jp.createdBy.id = :ownerId ORDER BY jp.postedDate DESC")
+    List<JobPosting> findByOwnerWithCompany(@Param("ownerId") Long ownerId);
 
     @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE jp.status = :status ORDER BY jp.postedDate DESC")
     List<JobPosting> findByStatusWithCompany(@Param("status") JobPosting.PostingStatus status);
