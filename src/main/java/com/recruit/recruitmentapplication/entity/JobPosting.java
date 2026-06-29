@@ -68,6 +68,12 @@ public class JobPosting {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
+    // HR Manager who created this posting. Used to scope what each HR sees/manages
+    // (Admin sees all). Nullable so pre-existing rows remain valid after migration.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "job_required_skills",
@@ -131,6 +137,8 @@ public class JobPosting {
     public void setStatus(PostingStatus status) { this.status = status; }
     public Company getCompany() { return company; }
     public void setCompany(Company company) { this.company = company; }
+    public User getCreatedBy() { return createdBy; }
+    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
     public Set<Skill> getRequiredSkills() { return requiredSkills; }
     public void setRequiredSkills(Set<Skill> value) { this.requiredSkills = value == null ? new HashSet<>() : value; }
     public List<Application> getApplications() { return applications; }

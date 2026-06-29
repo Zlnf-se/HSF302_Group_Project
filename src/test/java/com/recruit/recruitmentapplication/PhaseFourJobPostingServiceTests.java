@@ -38,9 +38,9 @@ class PhaseFourJobPostingServiceTests {
     @Test
     void createSetsDefaultsAndCompanyRelationship() {
         Company company = companyRepository.findByName("TechCorp Inc.").orElseThrow();
-        JobPosting created = service.create(validForm("Phase Four Backend", company.getId()));
+        JobPosting created = service.create(validForm("Phase Four Backend", company.getId()), "DRAFT", null);
         assertNotNull(created.getId());
-        assertEquals(PostingStatus.OPEN, created.getStatus());
+        assertEquals(PostingStatus.DRAFT, created.getStatus());
         assertEquals(LocalDate.now(), created.getPostedDate());
         assertEquals(company.getId(), created.getCompany().getId());
         assertTrue(company.getJobPostings().contains(created));
@@ -50,7 +50,7 @@ class PhaseFourJobPostingServiceTests {
     void searchReturnsOnlyOpenJobsWithInitializedCompany() {
         var jobs = service.findOpenJobs("java");
         assertFalse(jobs.isEmpty());
-        assertTrue(jobs.stream().allMatch(j -> j.getStatus() == PostingStatus.OPEN));
+        assertTrue(jobs.stream().allMatch(j -> j.getStatus() == PostingStatus.ACTIVE));
         assertTrue(jobs.stream().allMatch(j -> j.getTitle().toLowerCase().contains("java")));
         assertTrue(jobs.stream().allMatch(j -> Hibernate.isInitialized(j.getCompany())));
     }
@@ -61,17 +61,17 @@ class PhaseFourJobPostingServiceTests {
         JobPostingForm form = validForm("Invalid Salary Job", company.getId());
         form.setSalaryMin(new BigDecimal("3000"));
         form.setSalaryMax(new BigDecimal("1000"));
-        assertThrows(IllegalArgumentException.class, () -> service.create(form));
+        assertThrows(IllegalArgumentException.class, () -> service.create(form, "DRAFT", null));
     }
 
     @Test
     void updateCanMovePostingToAnotherCompany() {
         Company first = companyRepository.findByName("TechCorp Inc.").orElseThrow();
         Company second = companyRepository.findByName("FinanceHub Ltd.").orElseThrow();
-        JobPosting created = service.create(validForm("Move This Job", first.getId()));
+        JobPosting created = service.create(validForm("Move This Job", first.getId()), "DRAFT", null);
         JobPostingForm update = validForm("Moved Job", second.getId());
         update.setJobType("REMOTE");
-        JobPosting updated = service.update(created.getId(), update);
+        JobPosting updated = service.update(created.getId(), update, "UPDATE");
         repository.flush();
         assertEquals("Moved Job", updated.getTitle());
         assertEquals(second.getId(), updated.getCompany().getId());
@@ -81,7 +81,7 @@ class PhaseFourJobPostingServiceTests {
     @Test
     void closeAndDeleteChangePersistentState() {
         Company company = companyRepository.findByName("Creative Studio").orElseThrow();
-        JobPosting created = service.create(validForm("Close Delete Job", company.getId()));
+        JobPosting created = service.create(validForm("Close Delete Job", company.getId()), "DRAFT", null);
         service.close(created.getId());
         assertEquals(PostingStatus.CLOSED, repository.findById(created.getId()).orElseThrow().getStatus());
         service.delete(created.getId());
