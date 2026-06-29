@@ -36,7 +36,7 @@ class PhaseThreeCompanyWebTests {
     void anonymousUserIsRedirectedToLogin() throws Exception {
         mockMvc.perform(get("/companies"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/auth/login"));
+                .andExpect(redirectedUrl("/login"));
     }
 
     @Test
