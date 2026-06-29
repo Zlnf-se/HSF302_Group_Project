@@ -41,10 +41,10 @@ The stored password is a BCrypt hash, not plain text.
 
 ## SQL Server
 
-The application connects to SQL Server database `recruitment_web_db` through the Microsoft JDBC driver. Create the database first and update the local credentials in `src/main/resources/application.properties` when necessary.
+The application connects to SQL Server database `recruitment_db` through the Microsoft JDBC driver. Create the database first and update the local credentials in `src/main/resources/application.properties` when necessary.
 
 ```sql
-CREATE DATABASE recruitment_web_db;
+CREATE DATABASE recruitment_db;
 ```
 
 Run the application with:
