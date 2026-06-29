@@ -7,8 +7,6 @@ import com.recruit.recruitmentapplication.entity.CandidateProfile;
 import com.recruit.recruitmentapplication.entity.Company;
 import com.recruit.recruitmentapplication.entity.CompanyProfile;
 import com.recruit.recruitmentapplication.entity.Interview;
-import com.recruit.recruitmentapplication.entity.Interview.InterviewResult;
-import com.recruit.recruitmentapplication.entity.Interview.InterviewType;
 import com.recruit.recruitmentapplication.entity.JobPosting;
 import com.recruit.recruitmentapplication.entity.JobPosting.JobType;
 import com.recruit.recruitmentapplication.entity.JobPosting.PostingStatus;
@@ -70,10 +68,11 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         Role adminRole = seedRole(Role.ADMIN);
         Role recruiterRole = seedRole(Role.RECRUITER);
-        seedRole(Role.INTERVIEWER);
+        Role interviewerRole = seedRole(Role.INTERVIEWER);
         Role candidateRole = seedRole(Role.CANDIDATE);
         seedAdmin(adminRole);
-        seedRecruiter(recruiterRole);
+        User recruiter = seedRecruiter(recruiterRole);
+        User ivanInterviewer = seedUser("ivan", "Ivan@123", "ivan@recruit.com", "Ivan Interviewer", interviewerRole);
         User aliceUser = seedUser("alice", "Alice@123", "alice@example.com", "Alice Nguyen", candidateRole);
         User bobUser = seedUser("bob", "Bob@123", "bob@example.com", "Bob Tran", candidateRole);
         User carolUser = seedUser("carol", "Carol@123", "carol@example.com", "Carol Le", candidateRole);
@@ -116,7 +115,8 @@ public class DataInitializer implements CommandLineRunner {
                 JobType.FULL_TIME,
                 2000,
                 3500,
-                30
+                30,
+                recruiter
         );
         JobPosting frontendDeveloper = seedJobPosting(
                 techCorp,
@@ -127,7 +127,8 @@ public class DataInitializer implements CommandLineRunner {
                 JobType.REMOTE,
                 1500,
                 2500,
-                20
+                20,
+                recruiter
         );
         JobPosting dataAnalyst = seedJobPosting(
                 financeHub,
@@ -138,7 +139,8 @@ public class DataInitializer implements CommandLineRunner {
                 JobType.FULL_TIME,
                 1200,
                 2000,
-                15
+                15,
+                recruiter
         );
         JobPosting devOpsEngineer = seedJobPosting(
                 financeHub,
@@ -149,7 +151,8 @@ public class DataInitializer implements CommandLineRunner {
                 JobType.FULL_TIME,
                 1800,
                 3000,
-                25
+                25,
+                recruiter
         );
         JobPosting uxUiDesigner = seedJobPosting(
                 creativeStudio,
@@ -160,7 +163,8 @@ public class DataInitializer implements CommandLineRunner {
                 JobType.FULL_TIME,
                 1000,
                 1800,
-                10
+                10,
+                recruiter
         );
 
         Candidate alice = seedCandidate(
@@ -239,18 +243,25 @@ public class DataInitializer implements CommandLineRunner {
                 "I can also support full-stack work for candidate-facing features."
         );
 
-        aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.SHORTLISTED);
-        aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.INTERVIEW_SCHEDULED);
-        updateApplicationStatus(bobFrontendApplication, ApplicationStatus.UNDER_REVIEW);
-
-        Interview aliceTechnicalInterview = seedInterview(
-                aliceJavaApplication,
-                LocalDateTime.now().plusDays(3),
-                InterviewType.TECHNICAL,
-                "John Smith"
-        );
-        recordInterviewResult(aliceTechnicalInterview, InterviewResult.PASSED, "Strong Java skills");
-        updateApplicationStatus(aliceJavaApplication, ApplicationStatus.OFFERED);
+        // Build the demo pipeline scenario only once. Without this guard the seeder
+        // creates a fresh interview (and evaluation) on every startup, accumulating duplicates.
+        if (!interviewRepository.existsByApplication_IdAndInterviewer_Id(
+                aliceJavaApplication.getId(), ivanInterviewer.getId())) {
+            aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.SCREENING);
+            aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.INTERVIEW);
+            Interview aliceTechnicalInterview = seedInterview(
+                    aliceJavaApplication,
+                    ivanInterviewer,
+                    LocalDateTime.now().plusDays(3),
+                    "Phòng họp A / Google Meet"
+            );
+            recordEvaluation(aliceTechnicalInterview, 4, "Nền tảng Java vững, giao tiếp tốt.");
+            updateApplicationStatus(aliceJavaApplication, ApplicationStatus.OFFER);
+        }
+        // Only set Bob's initial stage on first seed, so manual changes are not overwritten on restart.
+        if (bobFrontendApplication.getStatus() == ApplicationStatus.APPLIED) {
+            updateApplicationStatus(bobFrontendApplication, ApplicationStatus.SCREENING);
+        }
     }
 
     private Role seedRole(String name) {
@@ -272,18 +283,14 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.save(admin);
     }
 
-    private void seedRecruiter(Role recruiterRole) {
-        if (userRepository.existsByUsername("recruiter")) {
-            return;
-        }
-        User recruiter = new User(
+    private User seedRecruiter(Role recruiterRole) {
+        return userRepository.findByUsername("recruiter").orElseGet(() -> userRepository.save(new User(
                 "recruiter",
                 passwordUtil.hash("Recruiter@123"),
                 "recruiter@recruit.com",
                 "Recruitment Manager",
                 recruiterRole
-        );
-        userRepository.save(recruiter);
+        )));
     }
 
     private User seedUser(String username, String rawPassword, String email, String fullName, Role role) {
@@ -336,10 +343,11 @@ public class DataInitializer implements CommandLineRunner {
             JobType jobType,
             int salaryMin,
             int salaryMax,
-            int deadlineDays
+            int deadlineDays,
+            User owner
     ) {
-        return jobPostingRepository.findByTitleAndCompany_Name(title, company.getName()).orElseGet(() -> {
-            JobPosting posting = new JobPosting(
+        JobPosting posting = jobPostingRepository.findByTitleAndCompany_Name(title, company.getName()).orElseGet(() -> {
+            JobPosting created = new JobPosting(
                     title,
                     department,
                     description,
@@ -349,12 +357,31 @@ public class DataInitializer implements CommandLineRunner {
                     BigDecimal.valueOf(salaryMax),
                     LocalDate.now().plusDays(deadlineDays)
             );
-            posting.setPostedDate(LocalDate.now());
-            posting.setStatus(PostingStatus.ACTIVE);
+            created.setPostedDate(LocalDate.now());
+            created.setStatus(PostingStatus.ACTIVE);
+            created.setCreatedBy(owner);
 
-            company.addJobPosting(posting);
-            return jobPostingRepository.save(posting);
+            company.addJobPosting(created);
+            return jobPostingRepository.save(created);
         });
+        // Backfill fields on rows seeded before these columns/values existed.
+        boolean changed = false;
+        if (posting.getCreatedBy() == null && owner != null) {
+            posting.setCreatedBy(owner);
+            changed = true;
+        }
+        if (posting.getDepartment() == null) {
+            posting.setDepartment(department);
+            changed = true;
+        }
+        if (posting.getLocation() == null) {
+            posting.setLocation(location);
+            changed = true;
+        }
+        if (changed) {
+            jobPostingRepository.save(posting);
+        }
+        return posting;
     }
 
     private Skill seedSkill(String name) {
@@ -452,24 +479,27 @@ public class DataInitializer implements CommandLineRunner {
 
     private Application updateApplicationStatus(Application application, ApplicationStatus status) {
         application.setStatus(status);
+        application.setStageEnteredAt(LocalDateTime.now());
         return applicationRepository.save(application);
     }
 
     private Interview seedInterview(
             Application application,
+            User interviewer,
             LocalDateTime scheduledAt,
-            InterviewType interviewType,
-            String interviewerName
+            String location
     ) {
-        Interview interview = new Interview(scheduledAt, interviewType, interviewerName);
+        Interview interview = new Interview(interviewer, scheduledAt, location);
 
         application.addInterview(interview);
         return interviewRepository.save(interview);
     }
 
-    private Interview recordInterviewResult(Interview interview, InterviewResult result, String notes) {
-        interview.setResult(result);
-        interview.setNotes(notes);
+    private Interview recordEvaluation(Interview interview, int rating, String feedback) {
+        interview.setRating(rating);
+        interview.setFeedback(feedback);
+        interview.setStatus(Interview.InterviewStatus.EVALUATED);
+        interview.setEvaluatedAt(LocalDateTime.now());
         return interviewRepository.save(interview);
     }
 }
