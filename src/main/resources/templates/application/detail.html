@@ -4,8 +4,120 @@
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
-    <section class="placeholder"><h1>Chi tiết ứng tuyển</h1>
-        <p>Nội dung được hoàn thiện ở phase sau.</p></section>
+    <nav class="breadcrumb" th:if="${isStaff}">
+        <a class="text-link" th:href="@{/jobs/{id}/applications(id=${app.jobPosting.id})}">&larr; Danh sách ứng tuyển</a>
+    </nav>
+    <nav class="breadcrumb" th:if="${isInterviewer}">
+        <a class="text-link" th:href="@{/interviews/assigned}">&larr; Phỏng vấn được giao</a>
+    </nav>
+
+    <div class="alert alert-success" th:if="${flashSuccess}" th:text="${flashSuccess}"></div>
+    <div class="alert alert-error" th:if="${flashError}" th:text="${flashError}"></div>
+
+    <div class="page-heading">
+        <p class="eyebrow" th:text="${app.jobPosting.title}">Vị trí</p>
+        <h1 th:text="${app.candidate.name}">Ứng viên</h1>
+    </div>
+
+    <!-- Candidate info panel -->
+    <section class="detail-panel">
+        <dl class="detail-grid">
+            <div><dt>Họ tên</dt><dd th:text="${app.candidate.name}"></dd></div>
+            <div><dt>Email</dt><dd th:text="${app.candidate.email}"></dd></div>
+            <div><dt>Ngày nộp</dt>
+                <dd th:text="${app.appliedAt != null ? #temporals.format(app.appliedAt, 'dd/MM/yyyy HH:mm') : '-'}"></dd></div>
+            <div><dt>Trạng thái</dt>
+                <dd><span th:classappend="${T(com.recruit.recruitmentapplication.util.PipelineStages).badgeClass(app.status)}"
+                          th:text="${T(com.recruit.recruitmentapplication.util.PipelineStages).label(app.status)}">Trạng thái</span></dd></div>
+        </dl>
+    </section>
+
+    <!-- Terminal state banners -->
+    <div class="alert alert-success" th:if="${app.status.name() == 'HIRED'}">Ứng viên này đã được tuyển.</div>
+    <div class="alert alert-error" th:if="${app.status.name() == 'REJECTED'}">Ứng viên này đã bị từ chối.</div>
+    <div class="alert" th:if="${app.status.name() == 'WITHDRAWN'}">Ứng viên đã rút đơn ứng tuyển.</div>
+
+    <!-- Pipeline controls (HR / Admin) -->
+    <section th:if="${isStaff and !app.status.terminal}" class="status-panel">
+        <h3>Hành động</h3>
+        <div class="actions">
+            <form th:if="${T(com.recruit.recruitmentapplication.util.PipelineStages).advanceLabel(app.status) != null}"
+                  th:action="@{/applications/{id}/advance(id=${app.id})}" method="post">
+                <button class="button" type="submit"
+                        th:text="${T(com.recruit.recruitmentapplication.util.PipelineStages).advanceLabel(app.status)}">Chuyển tiếp</button>
+            </form>
+            <form th:action="@{/applications/{id}/reject(id=${app.id})}" method="post"
+                  onsubmit="return confirm('Từ chối ứng viên này?')">
+                <button class="button button-danger" type="submit">Từ chối</button>
+            </form>
+            <a th:if="${app.status.name() == 'INTERVIEW'}"
+               class="button button-secondary"
+               th:href="@{/applications/{id}/interviews/new(id=${app.id})}">Phân công phỏng vấn</a>
+        </div>
+    </section>
+
+    <!-- Evaluation summary (HR / Admin) -->
+    <section th:if="${isStaff and evaluations != null and !evaluations.isEmpty()}" class="detail-panel">
+        <h3>Đánh giá phỏng vấn</h3>
+        <div th:each="ev : ${evaluations}" class="note-item">
+            <p>
+                <strong th:text="${ev.interviewerName}">Người phỏng vấn</strong>
+                · <span class="muted" th:text="${ev.scheduledAt != null ? #temporals.format(ev.scheduledAt, 'dd/MM/yyyy HH:mm') : ''}"></span>
+            </p>
+            <p class="rating-stars">
+                <span th:each="i : ${#numbers.sequence(1,5)}"
+                      th:text="${i <= ev.rating ? '★' : '☆'}">★</span>
+                <span class="muted" th:text="'(' + ${ev.rating} + '/5)'"></span>
+            </p>
+            <p th:text="${ev.feedback}">Nhận xét</p>
+            <p class="muted" th:if="${ev.evaluatedAt != null}"
+               th:text="'Đánh giá ngày ' + ${#temporals.format(ev.evaluatedAt, 'dd/MM/yyyy')}"></p>
+        </div>
+    </section>
+
+    <!-- Internal notes (HR / Admin) -->
+    <section th:if="${isStaff}" class="detail-panel">
+        <h3>Ghi chú nội bộ</h3>
+        <form th:action="@{/applications/{id}/notes(id=${app.id})}" method="post" class="note-form">
+            <div class="form-group">
+                <label for="content">Thêm ghi chú</label>
+                <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+            </div>
+            <button class="button button-secondary" type="submit">Lưu ghi chú</button>
+        </form>
+        <p class="muted" th:if="${notes == null or notes.isEmpty()}">Chưa có ghi chú nào.</p>
+        <div th:each="n : ${notes}" class="note-item">
+            <p>
+                <strong th:text="${n.authorName}">Tác giả</strong>
+                · <span class="muted" th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'dd/MM/yyyy HH:mm') : ''}"></span>
+            </p>
+            <p th:text="${n.content}">Nội dung</p>
+        </div>
+    </section>
+
+    <!-- Interviewer view -->
+    <section th:if="${isInterviewer and myInterview != null}" class="status-panel">
+        <h3>Buổi phỏng vấn của bạn</h3>
+        <p>
+            <span class="muted">Lịch hẹn:</span>
+            <span th:text="${myInterview.scheduledAt != null ? #temporals.format(myInterview.scheduledAt, 'dd/MM/yyyy HH:mm') : '-'}"></span>
+            <span th:if="${myInterview.location != null}" th:text="' · ' + ${myInterview.location}"></span>
+        </p>
+
+        <div th:if="${!myInterview.evaluated}" class="actions">
+            <a class="button" th:href="@{/interviews/{id}/evaluate(id=${myInterview.id})}">Gửi đánh giá</a>
+        </div>
+
+        <div th:if="${myInterview.evaluated}">
+            <div class="alert alert-success">Bạn đã gửi đánh giá cho ứng viên này.</div>
+            <p class="rating-stars">
+                <span th:each="i : ${#numbers.sequence(1,5)}"
+                      th:text="${i <= myInterview.rating ? '★' : '☆'}">★</span>
+                <span class="muted" th:text="'(' + ${myInterview.rating} + '/5)'"></span>
+            </p>
+            <p th:text="${myInterview.feedback}">Nhận xét</p>
+        </div>
+    </section>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>

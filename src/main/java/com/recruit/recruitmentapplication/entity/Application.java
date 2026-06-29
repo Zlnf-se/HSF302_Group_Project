@@ -38,13 +38,19 @@ public class Application {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
-    private ApplicationStatus status = ApplicationStatus.SUBMITTED;
+    private ApplicationStatus status = ApplicationStatus.APPLIED;
+
+    @Column(name = "stage_entered_at")
+    private LocalDateTime stageEnteredAt = LocalDateTime.now();
 
     @Column(name = "cover_letter", length = 3000)
     private String coverLetter;
 
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Interview> interviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<InternalNote> internalNotes = new ArrayList<>();
 
     public Application() {
     }
@@ -67,12 +73,21 @@ public class Application {
     public void setStatus(ApplicationStatus status) { this.status = status; }
     public String getCoverLetter() { return coverLetter; }
     public void setCoverLetter(String value) { this.coverLetter = value; }
+    public LocalDateTime getStageEnteredAt() { return stageEnteredAt; }
+    public void setStageEnteredAt(LocalDateTime value) { this.stageEnteredAt = value; }
     public List<Interview> getInterviews() { return interviews; }
     public void setInterviews(List<Interview> value) { this.interviews = value == null ? new ArrayList<>() : value; }
+    public List<InternalNote> getInternalNotes() { return internalNotes; }
+    public void setInternalNotes(List<InternalNote> value) { this.internalNotes = value == null ? new ArrayList<>() : value; }
 
     public void addInterview(Interview interview) {
         interviews.add(interview);
         interview.setApplication(this);
+    }
+
+    public void addInternalNote(InternalNote note) {
+        internalNotes.add(note);
+        note.setApplication(this);
     }
 
     @Override
@@ -89,6 +104,10 @@ public class Application {
     public int hashCode() { return getClass().hashCode(); }
 
     public enum ApplicationStatus {
-        SUBMITTED, UNDER_REVIEW, SHORTLISTED, INTERVIEW_SCHEDULED, OFFERED, REJECTED, WITHDRAWN
+        APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED, WITHDRAWN;
+
+        public boolean isTerminal() {
+            return this == HIRED || this == REJECTED || this == WITHDRAWN;
+        }
     }
 }

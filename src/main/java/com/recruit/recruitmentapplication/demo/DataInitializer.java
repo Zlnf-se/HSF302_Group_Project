@@ -7,8 +7,6 @@ import com.recruit.recruitmentapplication.entity.CandidateProfile;
 import com.recruit.recruitmentapplication.entity.Company;
 import com.recruit.recruitmentapplication.entity.CompanyProfile;
 import com.recruit.recruitmentapplication.entity.Interview;
-import com.recruit.recruitmentapplication.entity.Interview.InterviewResult;
-import com.recruit.recruitmentapplication.entity.Interview.InterviewType;
 import com.recruit.recruitmentapplication.entity.JobPosting;
 import com.recruit.recruitmentapplication.entity.JobPosting.JobType;
 import com.recruit.recruitmentapplication.entity.JobPosting.PostingStatus;
@@ -70,10 +68,11 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         Role adminRole = seedRole(Role.ADMIN);
         Role recruiterRole = seedRole(Role.RECRUITER);
-        seedRole(Role.INTERVIEWER);
+        Role interviewerRole = seedRole(Role.INTERVIEWER);
         Role candidateRole = seedRole(Role.CANDIDATE);
         seedAdmin(adminRole);
         seedRecruiter(recruiterRole);
+        User ivanInterviewer = seedUser("ivan", "Ivan@123", "ivan@recruit.com", "Ivan Interviewer", interviewerRole);
         User aliceUser = seedUser("alice", "Alice@123", "alice@example.com", "Alice Nguyen", candidateRole);
         User bobUser = seedUser("bob", "Bob@123", "bob@example.com", "Bob Tran", candidateRole);
         User carolUser = seedUser("carol", "Carol@123", "carol@example.com", "Carol Le", candidateRole);
@@ -234,18 +233,25 @@ public class DataInitializer implements CommandLineRunner {
                 "I can also support full-stack work for candidate-facing features."
         );
 
-        aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.SHORTLISTED);
-        aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.INTERVIEW_SCHEDULED);
-        updateApplicationStatus(bobFrontendApplication, ApplicationStatus.UNDER_REVIEW);
-
-        Interview aliceTechnicalInterview = seedInterview(
-                aliceJavaApplication,
-                LocalDateTime.now().plusDays(3),
-                InterviewType.TECHNICAL,
-                "John Smith"
-        );
-        recordInterviewResult(aliceTechnicalInterview, InterviewResult.PASSED, "Strong Java skills");
-        updateApplicationStatus(aliceJavaApplication, ApplicationStatus.OFFERED);
+        // Build the demo pipeline scenario only once. Without this guard the seeder
+        // creates a fresh interview (and evaluation) on every startup, accumulating duplicates.
+        if (!interviewRepository.existsByApplication_IdAndInterviewer_Id(
+                aliceJavaApplication.getId(), ivanInterviewer.getId())) {
+            aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.SCREENING);
+            aliceJavaApplication = updateApplicationStatus(aliceJavaApplication, ApplicationStatus.INTERVIEW);
+            Interview aliceTechnicalInterview = seedInterview(
+                    aliceJavaApplication,
+                    ivanInterviewer,
+                    LocalDateTime.now().plusDays(3),
+                    "Phòng họp A / Google Meet"
+            );
+            recordEvaluation(aliceTechnicalInterview, 4, "Nền tảng Java vững, giao tiếp tốt.");
+            updateApplicationStatus(aliceJavaApplication, ApplicationStatus.OFFER);
+        }
+        // Only set Bob's initial stage on first seed, so manual changes are not overwritten on restart.
+        if (bobFrontendApplication.getStatus() == ApplicationStatus.APPLIED) {
+            updateApplicationStatus(bobFrontendApplication, ApplicationStatus.SCREENING);
+        }
     }
 
     private Role seedRole(String name) {
@@ -445,24 +451,27 @@ public class DataInitializer implements CommandLineRunner {
 
     private Application updateApplicationStatus(Application application, ApplicationStatus status) {
         application.setStatus(status);
+        application.setStageEnteredAt(LocalDateTime.now());
         return applicationRepository.save(application);
     }
 
     private Interview seedInterview(
             Application application,
+            User interviewer,
             LocalDateTime scheduledAt,
-            InterviewType interviewType,
-            String interviewerName
+            String location
     ) {
-        Interview interview = new Interview(scheduledAt, interviewType, interviewerName);
+        Interview interview = new Interview(interviewer, scheduledAt, location);
 
         application.addInterview(interview);
         return interviewRepository.save(interview);
     }
 
-    private Interview recordInterviewResult(Interview interview, InterviewResult result, String notes) {
-        interview.setResult(result);
-        interview.setNotes(notes);
+    private Interview recordEvaluation(Interview interview, int rating, String feedback) {
+        interview.setRating(rating);
+        interview.setFeedback(feedback);
+        interview.setStatus(Interview.InterviewStatus.EVALUATED);
+        interview.setEvaluatedAt(LocalDateTime.now());
         return interviewRepository.save(interview);
     }
 }
