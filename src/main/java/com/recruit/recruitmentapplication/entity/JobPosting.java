@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,8 +33,14 @@ public class JobPosting {
     @Column(nullable = false, length = 200)
     private String title;
 
+    @Column(length = 100)
+    private String department;
+
     @Column(length = 2000)
     private String description;
+
+    @Column(length = 2000)
+    private String requirements;
 
     @Column(length = 100)
     private String location;
@@ -55,11 +62,17 @@ public class JobPosting {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
-    private PostingStatus status = PostingStatus.OPEN;
+    private PostingStatus status = PostingStatus.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
+
+    // HR Manager who created this posting. Used to scope what each HR sees/manages
+    // (Admin sees all). Nullable so pre-existing rows remain valid after migration.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -72,12 +85,16 @@ public class JobPosting {
     @OneToMany(mappedBy = "jobPosting", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Application> applications = new ArrayList<>();
 
+    @Transient
+    private Integer applicationCount;
+
     public JobPosting() {
     }
 
-    public JobPosting(String title, String description, String location, JobType jobType,
+    public JobPosting(String title, String department, String description, String location, JobType jobType,
                       BigDecimal salaryMin, BigDecimal salaryMax, LocalDate deadline) {
         this.title = title;
+        this.department = department;
         this.description = description;
         this.location = location;
         this.jobType = jobType;
@@ -90,8 +107,16 @@ public class JobPosting {
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getRequirements() { return requirements; }
+    public void setRequirements(String requirements) { this.requirements = requirements; }
+
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
     public JobType getJobType() { return jobType; }
@@ -101,6 +126,10 @@ public class JobPosting {
     public BigDecimal getSalaryMax() { return salaryMax; }
     public void setSalaryMax(BigDecimal salaryMax) { this.salaryMax = salaryMax; }
     public LocalDate getPostedDate() { return postedDate; }
+    @Transient
+    public LocalDate getCreatedAt() {
+        return postedDate;
+    }
     public void setPostedDate(LocalDate postedDate) { this.postedDate = postedDate; }
     public LocalDate getDeadline() { return deadline; }
     public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
@@ -108,10 +137,35 @@ public class JobPosting {
     public void setStatus(PostingStatus status) { this.status = status; }
     public Company getCompany() { return company; }
     public void setCompany(Company company) { this.company = company; }
+    public User getCreatedBy() { return createdBy; }
+    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
     public Set<Skill> getRequiredSkills() { return requiredSkills; }
     public void setRequiredSkills(Set<Skill> value) { this.requiredSkills = value == null ? new HashSet<>() : value; }
     public List<Application> getApplications() { return applications; }
     public void setApplications(List<Application> value) { this.applications = value == null ? new ArrayList<>() : value; }
+
+
+    public Integer getApplicationCount() {
+        if (applicationCount != null) {
+            return applicationCount;
+        }
+        return applications != null ? applications.size() : 0;
+    }
+
+    public void setApplicationCount(Integer applicationCount) {
+        this.applicationCount = applicationCount;
+    }
+
+    public String getSalaryRange() {
+        if (salaryMin != null && salaryMax != null) {
+            return salaryMin + " - " + salaryMax;
+        } else if (salaryMin != null) {
+            return "Từ " + salaryMin;
+        } else if (salaryMax != null) {
+            return "Đến " + salaryMax;
+        }
+        return "Thỏa thuận";
+    }
 
     public void addRequiredSkill(Skill skill) {
         requiredSkills.add(skill);
@@ -147,5 +201,7 @@ public class JobPosting {
     public int hashCode() { return getClass().hashCode(); }
 
     public enum JobType { FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP, REMOTE }
-    public enum PostingStatus { OPEN, CLOSED, DRAFT }
+    public enum PostingStatus { ACTIVE, CLOSED, DRAFT }
+
+
 }

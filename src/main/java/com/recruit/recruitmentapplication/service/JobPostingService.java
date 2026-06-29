@@ -1,13 +1,28 @@
 package com.recruit.recruitmentapplication.service;
 
 import com.recruit.recruitmentapplication.dto.JobPostingForm;
+import com.recruit.recruitmentapplication.dto.PipelineReportDto;
+import com.recruit.recruitmentapplication.entity.Application;
+import com.recruit.recruitmentapplication.entity.Application.ApplicationStatus;
 import com.recruit.recruitmentapplication.entity.Company;
+import com.recruit.recruitmentapplication.entity.Interview;
 import com.recruit.recruitmentapplication.entity.JobPosting;
+import com.recruit.recruitmentapplication.entity.JobPosting.PostingStatus;
+import com.recruit.recruitmentapplication.entity.User;
+import com.recruit.recruitmentapplication.repository.ApplicationRepository;
 import com.recruit.recruitmentapplication.repository.CompanyRepository;
 import com.recruit.recruitmentapplication.repository.JobPostingRepository;
 import com.recruit.recruitmentapplication.repository.SkillRepository;
+import com.recruit.recruitmentapplication.repository.UserRepository;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,13 +31,21 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final CompanyRepository companyRepository;
     private final SkillRepository skillRepository;
+    private final ApplicationRepository applicationRepository;
+    private final UserRepository userRepository;
 
-    public JobPostingService(JobPostingRepository jobPostingRepository, CompanyRepository companyRepository,
-                             SkillRepository skillRepository) {
+    public JobPostingService(JobPostingRepository jobPostingRepository,
+                             CompanyRepository companyRepository,
+                             SkillRepository skillRepository,
+                             ApplicationRepository applicationRepository,
+                             UserRepository userRepository) {
         this.jobPostingRepository = jobPostingRepository;
         this.companyRepository = companyRepository;
         this.skillRepository = skillRepository;
+        this.applicationRepository = applicationRepository;
+        this.userRepository = userRepository;
     }
+
 
     @Transactional(readOnly = true)
     public List<JobPosting> findOpenJobs(String keyword) {
@@ -31,16 +54,32 @@ public class JobPostingService {
                 : jobPostingRepository.findOpenJobsByTitle(keyword.trim());
     }
 
+
     @Transactional(readOnly = true)
-    public JobPosting findById(Long id) {
-        return jobPostingRepository.findByIdWithCompany(id)
-                .orElseThrow(() -> notFound(id));
+    public List<JobPosting> findAllForHR(String keyword, String statusFilter) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return jobPostingRepository.findByTitleContainingWithCompany(keyword.trim());
+        }
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+            try {
+                PostingStatus status = PostingStatus.valueOf(statusFilter);
+                return jobPostingRepository.findByStatusWithCompany(status);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return jobPostingRepository.findAllWithCompany();
     }
 
     @Transactional(readOnly = true)
-    public List<JobPosting> findByCompany(Long companyId) {
-        return jobPostingRepository.findByCompany_Id(companyId);
+    public Map<PostingStatus, Long> countByStatus() {
+        Map<PostingStatus, Long> map = new LinkedHashMap<>();
+        for (PostingStatus s : PostingStatus.values()) map.put(s, 0L);
+        for (PostingStatus s : PostingStatus.values()) {
+            map.put(s, jobPostingRepository.countByStatus(s));
+        }
+        return map;
     }
+
 
     @Transactional(readOnly = true)
     public List<com.recruit.recruitmentapplication.entity.Skill> findAllSkills() {
@@ -48,47 +87,189 @@ public class JobPostingService {
     }
 
     @Transactional
-    public JobPosting create(JobPostingForm form) {
+    public JobPosting create(JobPostingForm form, String action, Long ownerId) {
         validateSalary(form.getSalaryMin(), form.getSalaryMax());
         Company company = findCompany(form.getCompanyId());
+        User owner = ownerId == null ? null : userRepository.findById(ownerId).orElse(null);
+
         JobPosting posting = new JobPosting(
-                form.getTitle().trim(), trimToNull(form.getDescription()), trimToNull(form.getLocation()),
-                parseJobType(form.getJobType()), form.getSalaryMin(), form.getSalaryMax(), form.getDeadline());
+                form.getTitle().trim(),
+                trimToNull(form.getDepartment()),
+                trimToNull(form.getDescription()),
+                trimToNull(form.getLocation()),
+                parseJobType(form.getJobType()),
+                form.getSalaryMin(),
+                form.getSalaryMax(),
+                form.getDeadline());
+
+        posting.setRequirements(trimToNull(form.getRequirements()));
+        posting.setCreatedBy(owner);
+        // Spec SCR-11: a new posting is saved as Draft; only an explicit Publish goes Active.
+        posting.setStatus("PUBLISH".equalsIgnoreCase(action) ? PostingStatus.ACTIVE : PostingStatus.DRAFT);
+
         company.addJobPosting(posting);
         replaceSkills(posting, form);
         return jobPostingRepository.save(posting);
     }
 
     @Transactional
-    public JobPosting update(Long id, JobPostingForm form) {
+    public JobPosting update(Long id, JobPostingForm form, String action) {
         validateSalary(form.getSalaryMin(), form.getSalaryMax());
-        JobPosting posting = findById(id);
+        JobPosting posting = findByIdRaw(id);
+        if (posting.getStatus() == PostingStatus.CLOSED) {
+            throw new IllegalArgumentException("Tin tuyển dụng đã đóng và không thể chỉnh sửa.");
+        }
         Company selectedCompany = findCompany(form.getCompanyId());
+
         if (!posting.getCompany().getId().equals(selectedCompany.getId())) {
             posting.getCompany().removeJobPosting(posting);
             selectedCompany.addJobPosting(posting);
         }
+
         posting.setTitle(form.getTitle().trim());
+        posting.setDepartment(trimToNull(form.getDepartment()));
         posting.setDescription(trimToNull(form.getDescription()));
+        posting.setRequirements(trimToNull(form.getRequirements()));
         posting.setLocation(trimToNull(form.getLocation()));
         posting.setJobType(parseJobType(form.getJobType()));
         posting.setSalaryMin(form.getSalaryMin());
         posting.setSalaryMax(form.getSalaryMax());
         posting.setDeadline(form.getDeadline());
+
+        // Only an explicit Publish changes the status (Draft -> Active). A plain
+        // "Save changes" keeps the current status, per spec SCR-11.
+        if ("PUBLISH".equalsIgnoreCase(action)) {
+            posting.setStatus(PostingStatus.ACTIVE);
+        }
         replaceSkills(posting, form);
         return jobPostingRepository.save(posting);
     }
 
     @Transactional
+    public JobPosting publish(Long id) {
+        JobPosting posting = findByIdRaw(id);
+        posting.setStatus(PostingStatus.ACTIVE);
+        return jobPostingRepository.save(posting);
+    }
+
+    /**
+     * Postings the current user may manage: their own for an HR Manager, all for an Admin.
+     * Application counts are populated up-front to avoid N+1 lazy loads in the view.
+     */
+    @Transactional(readOnly = true)
+    public List<JobPosting> findManaged(Long ownerId, boolean isAdmin) {
+        List<JobPosting> jobs = isAdmin
+                ? jobPostingRepository.findAllWithCompany()
+                : jobPostingRepository.findByOwnerWithCompany(ownerId);
+        populateApplicationCounts(jobs);
+        return jobs;
+    }
+
+    private void populateApplicationCounts(List<JobPosting> jobs) {
+        Map<Long, Long> counts = new HashMap<>();
+        for (Object[] row : jobPostingRepository.countApplicationsPerJob()) {
+            counts.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
+        }
+        for (JobPosting job : jobs) {
+            job.setApplicationCount(counts.getOrDefault(job.getId(), 0L).intValue());
+        }
+    }
+
+
+    @Transactional(readOnly = true)
+    public JobPosting findById(Long id) {
+        return jobPostingRepository.findByIdWithCompany(id)
+                .orElseThrow(() -> notFound(id));
+    }
+
+    @Transactional(readOnly = true)
+    public long countApplications(Long jobId) {
+        return applicationRepository.countByJobPosting_Id(jobId);
+    }
+
+    @Transactional(readOnly = true)
+    public PipelineReportDto getPipelineForJob(Long jobId) {
+        JobPosting job = findById(jobId);
+        PipelineReportDto dto = new PipelineReportDto(job.getId(), job.getTitle());
+        for (Object[] row : applicationRepository.countByStatusForJob(jobId)) {
+            dto.addCount((ApplicationStatus) row[0], ((Number) row[1]).longValue());
+        }
+        for (Application a : applicationRepository.findByJobWithCandidate(jobId)) {
+            long daysInStage = a.getStageEnteredAt() == null
+                    ? 0
+                    : ChronoUnit.DAYS.between(a.getStageEnteredAt(), LocalDateTime.now());
+            String interviewerName = a.getInterviews().stream()
+                    .max(Comparator.comparing(Interview::getScheduledAt,
+                            Comparator.nullsFirst(Comparator.naturalOrder())))
+                    .map(Interview::getInterviewerName)
+                    .orElse(null);
+            dto.addApplication(new PipelineReportDto.Row(
+                    a.getCandidate().getName(), a.getStatus(), daysInStage, interviewerName));
+        }
+        return dto;
+    }
+
+    @Transactional
     public JobPosting close(Long id) {
-        JobPosting posting = findById(id);
-        posting.setStatus(JobPosting.PostingStatus.CLOSED);
+        JobPosting posting = findByIdRaw(id);
+        posting.setStatus(PostingStatus.CLOSED);
+        return jobPostingRepository.save(posting);
+    }
+
+    @Transactional
+    public JobPosting reopen(Long id) {
+        JobPosting posting = findByIdRaw(id);
+        posting.setStatus(PostingStatus.ACTIVE);
         return jobPostingRepository.save(posting);
     }
 
     @Transactional
     public void delete(Long id) {
-        jobPostingRepository.delete(findById(id));
+        jobPostingRepository.delete(findByIdRaw(id));
+    }
+
+
+
+    @Transactional(readOnly = true)
+    public List<PipelineReportDto> getPipelineReportAll() {
+        List<Object[]> rows = applicationRepository.pipelineSummaryAll();
+        Map<Long, PipelineReportDto> map = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            Long jobId = ((Number) row[0]).longValue();
+            String jobTitle = (String) row[1];
+            ApplicationStatus status = (ApplicationStatus) row[2];
+            long count = ((Number) row[3]).longValue();
+            map.computeIfAbsent(jobId, k -> new PipelineReportDto(k, jobTitle))
+                    .addCount(status, count);
+        }
+        List<PipelineReportDto> result = new ArrayList<>(map.values());
+        result.sort((a, b) -> Integer.compare(b.getTotal(), a.getTotal()));
+        return result;
+    }
+
+
+    @Transactional(readOnly = true)
+    public PipelineReportDto getGlobalPipeline() {
+        PipelineReportDto dto = new PipelineReportDto(null, "Toàn hệ thống");
+        List<Object[]> rows = applicationRepository.countByStatusGlobal();
+        for (Object[] row : rows) {
+            ApplicationStatus status = (ApplicationStatus) row[0];
+            long count = ((Number) row[1]).longValue();
+            dto.addCount(status, count);
+        }
+        return dto;
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<JobPosting> findByCompany(Long companyId) {
+        return jobPostingRepository.findByCompany_Id(companyId);
+    }
+
+
+    private JobPosting findByIdRaw(Long id) {
+        return jobPostingRepository.findByIdWithCompany(id)
+                .orElseThrow(() -> notFound(id));
     }
 
     private Company findCompany(Long id) {
@@ -98,16 +279,18 @@ public class JobPostingService {
 
     private void replaceSkills(JobPosting posting, JobPostingForm form) {
         posting.clearRequiredSkills();
-        for (Long skillId : form.getSkillIds()) {
-            posting.addRequiredSkill(skillRepository.findById(skillId)
-                    .orElseThrow(() -> new IllegalArgumentException("Skill không hợp lệ")));
+        if (form.getSkillIds() != null) {
+            for (Long skillId : form.getSkillIds()) {
+                posting.addRequiredSkill(skillRepository.findById(skillId)
+                        .orElseThrow(() -> new IllegalArgumentException("Skill không hợp lệ")));
+            }
         }
     }
 
     private JobPosting.JobType parseJobType(String value) {
         try {
             return JobPosting.JobType.valueOf(value);
-        } catch (RuntimeException exception) {
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException("Loại việc không hợp lệ");
         }
     }

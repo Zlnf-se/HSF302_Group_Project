@@ -71,6 +71,7 @@ public class DataInitializer implements CommandLineRunner {
         Role interviewerRole = seedRole(Role.INTERVIEWER);
         Role candidateRole = seedRole(Role.CANDIDATE);
         seedAdmin(adminRole);
+        User recruiter = seedRecruiter(recruiterRole);
         seedRecruiter(recruiterRole);
         User ivanInterviewer = seedUser("ivan", "Ivan@123", "ivan@recruit.com", "Ivan Interviewer", interviewerRole);
         User aliceUser = seedUser("alice", "Alice@123", "alice@example.com", "Alice Nguyen", candidateRole);
@@ -109,52 +110,62 @@ public class DataInitializer implements CommandLineRunner {
         JobPosting seniorJavaDeveloper = seedJobPosting(
                 techCorp,
                 "Senior Java Developer",
+                "Engineering",
                 "Develop backend services for the recruitment platform",
                 "HCM",
                 JobType.FULL_TIME,
                 2000,
                 3500,
-                30
+                30,
+                recruiter
         );
         JobPosting frontendDeveloper = seedJobPosting(
                 techCorp,
                 "Frontend Developer",
+                "Engineering",
                 "Build user interfaces for candidates and employers",
                 "Remote",
                 JobType.REMOTE,
                 1500,
                 2500,
-                20
+                20,
+                recruiter
         );
         JobPosting dataAnalyst = seedJobPosting(
                 financeHub,
                 "Data Analyst",
+                "Data & Analytics",
                 "Analyze finance and recruitment data",
                 "Ha Noi",
                 JobType.FULL_TIME,
                 1200,
                 2000,
-                15
+                15,
+                recruiter
         );
         JobPosting devOpsEngineer = seedJobPosting(
                 financeHub,
                 "DevOps Engineer",
+                "Engineering",
                 "Maintain cloud infrastructure and CI/CD",
                 "Ha Noi",
                 JobType.FULL_TIME,
                 1800,
                 3000,
-                25
+                25,
+                recruiter
         );
         JobPosting uxUiDesigner = seedJobPosting(
                 creativeStudio,
                 "UX/UI Designer",
+                "Design",
                 "Design candidate and recruiter experiences",
                 "Da Nang",
                 JobType.FULL_TIME,
                 1000,
                 1800,
-                10
+                10,
+                recruiter
         );
 
         Candidate alice = seedCandidate(
@@ -273,18 +284,14 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.save(admin);
     }
 
-    private void seedRecruiter(Role recruiterRole) {
-        if (userRepository.existsByUsername("recruiter")) {
-            return;
-        }
-        User recruiter = new User(
+    private User seedRecruiter(Role recruiterRole) {
+        return userRepository.findByUsername("recruiter").orElseGet(() -> userRepository.save(new User(
                 "recruiter",
                 passwordUtil.hash("Recruiter@123"),
                 "recruiter@recruit.com",
                 "Recruitment Manager",
                 recruiterRole
-        );
-        userRepository.save(recruiter);
+        )));
     }
 
     private User seedUser(String username, String rawPassword, String email, String fullName, Role role) {
@@ -331,16 +338,19 @@ public class DataInitializer implements CommandLineRunner {
     private JobPosting seedJobPosting(
             Company company,
             String title,
+            String department,
             String description,
             String location,
             JobType jobType,
             int salaryMin,
             int salaryMax,
-            int deadlineDays
+            int deadlineDays,
+            User owner
     ) {
-        return jobPostingRepository.findByTitleAndCompany_Name(title, company.getName()).orElseGet(() -> {
-            JobPosting posting = new JobPosting(
+        JobPosting posting = jobPostingRepository.findByTitleAndCompany_Name(title, company.getName()).orElseGet(() -> {
+            JobPosting created = new JobPosting(
                     title,
+                    department,
                     description,
                     location,
                     jobType,
@@ -348,12 +358,31 @@ public class DataInitializer implements CommandLineRunner {
                     BigDecimal.valueOf(salaryMax),
                     LocalDate.now().plusDays(deadlineDays)
             );
-            posting.setPostedDate(LocalDate.now());
-            posting.setStatus(PostingStatus.OPEN);
+            created.setPostedDate(LocalDate.now());
+            created.setStatus(PostingStatus.ACTIVE);
+            created.setCreatedBy(owner);
 
-            company.addJobPosting(posting);
-            return jobPostingRepository.save(posting);
+            company.addJobPosting(created);
+            return jobPostingRepository.save(created);
         });
+        // Backfill fields on rows seeded before these columns/values existed.
+        boolean changed = false;
+        if (posting.getCreatedBy() == null && owner != null) {
+            posting.setCreatedBy(owner);
+            changed = true;
+        }
+        if (posting.getDepartment() == null) {
+            posting.setDepartment(department);
+            changed = true;
+        }
+        if (posting.getLocation() == null) {
+            posting.setLocation(location);
+            changed = true;
+        }
+        if (changed) {
+            jobPostingRepository.save(posting);
+        }
+        return posting;
     }
 
     private Skill seedSkill(String name) {

@@ -82,4 +82,19 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Transactional
     @Query("UPDATE Application a SET a.status = :status WHERE a.id = :id")
     int updateStatus(@Param("id") Long id, @Param("status") Application.ApplicationStatus status);
+
+    @Query("SELECT a.status, COUNT(a) FROM Application a WHERE a.jobPosting.id = :jobId GROUP BY a.status")
+    List<Object[]> countByStatusForJob(@Param("jobId") Long jobId);
+
+    @Query("SELECT a.status, COUNT(a) FROM Application a GROUP BY a.status")
+    List<Object[]> countByStatusGlobal();
+
+    @Query("""
+            SELECT jp.id, jp.title, a.status, COUNT(a)
+            FROM Application a
+            JOIN a.jobPosting jp
+            GROUP BY jp.id, jp.title, a.status
+            ORDER BY jp.id
+            """)
+    List<Object[]> pipelineSummaryAll();
 }

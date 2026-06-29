@@ -126,3 +126,27 @@ th { background: #eef2f7; font-size: 14px; }
 .star-rating label:hover,
 .star-rating label:hover ~ label { color: #f59e0b; }
 .star-rating input:focus-visible + label { outline: 2px solid #0369a1; border-radius: 4px; }
+
+/* SCR-10 job card grid */
+.job-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.job-card { padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.job-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.job-card-title { font-size: 17px; font-weight: 700; text-decoration: none; color: var(--brand); }
+.job-card-title:hover { text-decoration: underline; }
+.job-card-actions { margin-top: 14px; gap: 6px; flex-wrap: wrap; }
+.button-small { padding: 4px 10px; font-size: 13px; }
+
+/* Pipeline bar chart (SCR-12, SCR-20) */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 120px 1fr 40px; align-items: center; gap: 12px; }
+.bar-label { font-size: 13px; font-weight: 600; color: #334155; }
+.bar-track { background: #f1f5f9; border-radius: 999px; height: 18px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; min-width: 2px; border-radius: 999px; background: #0369a1; }
+.bar-value { font-weight: 700; text-align: right; }
+.bar-applied { background: #38bdf8; }
+.bar-screening { background: #facc15; }
+.bar-interview { background: #c084fc; }
+.bar-offer { background: #2dd4bf; }
+.bar-hired { background: #4ade80; }
+.bar-rejected { background: #f87171; }
+.bar-withdrawn { background: #94a3b8; }

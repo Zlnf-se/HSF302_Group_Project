@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Báo cáo Tuyển dụng')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <nav class="breadcrumb">
+        <a class="text-link" th:href="@{/jobs/{id}(id=${report.jobId})}">&larr; Chi tiết công việc</a>
+    </nav>
+
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow">Pipeline Report</p>
+            <h1>Báo cáo tiến trình: <span th:text="${report.jobTitle}"></span></h1>
+        </div>
+        <div class="actions" th:if="${managedJobs != null and managedJobs.size() > 1}">
+            <label class="muted" for="jobSelector">Chọn tin:</label>
+            <select id="jobSelector" class="form-control"
+                    onchange="if(this.value){window.location.href='/jobs/'+this.value+'/report';}">
+                <option th:each="j : ${managedJobs}" th:value="${j.id}" th:text="${j.title}"
+                        th:selected="${j.id == report.jobId}"></option>
+            </select>
+        </div>
+    </div>
+
+    <section class="detail-panel" th:if="${report.total > 0}">
+        <h3>Ứng viên theo giai đoạn</h3>
+        <div class="bar-chart">
+            <div class="bar-row" th:each="entry : ${report.statusCounts}">
+                <span class="bar-label"
+                      th:text="${T(com.recruit.recruitmentapplication.util.PipelineStages).label(entry.key)}">Giai đoạn</span>
+                <span class="bar-track">
+                    <span class="bar-fill"
+                          th:classappend="${'bar-' + entry.key.name().toLowerCase()}"
+                          th:style="'width:' + ${entry.value * 100 / report.total} + '%'"></span>
+                </span>
+                <span class="bar-value" th:text="${entry.value}">0</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="table-wrap">
+        <h3>Danh sách ứng viên</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Tên ứng viên</th>
+                <th>Giai đoạn hiện tại</th>
+                <th>Số ngày ở giai đoạn</th>
+                <th>Người phỏng vấn</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="app : ${report.applications}">
+                <td><strong th:text="${app.candidateName}"></strong></td>
+                <td>
+                    <span th:classappend="${T(com.recruit.recruitmentapplication.util.PipelineStages).badgeClass(app.status)}"
+                          th:text="${T(com.recruit.recruitmentapplication.util.PipelineStages).label(app.status)}">Trạng thái</span>
+                </td>
+                <td th:text="${app.daysInStage + ' ngày'}"></td>
+                <td th:text="${app.interviewerName ?: '-'}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(report.applications)}">
+                <td colspan="4" class="empty-cell">Chưa có ứng viên nào ứng tuyển cho vị trí này.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
