@@ -36,11 +36,14 @@ nav a:hover { color: var(--brand); }
 .form-group { margin-bottom: 18px; }
 .form-group label { display: block; margin-bottom: 6px; font-weight: 700; }
 .form-control { width: 100%; padding: 11px 12px; color: var(--ink); background: #fff; border: 1px solid #aeb8c8; border-radius: 6px; font: inherit; }
+.helper-text { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
 .field-error { display: block; margin-top: 5px; color: #b42318; font-size: 14px; }
 .alert { margin-bottom: 18px; padding: 12px 14px; border-radius: 6px; }
 .alert-error { color: #7a271a; background: #fef3f2; border: 1px solid #fecdca; }
 .alert-success { color: #05603a; background: #ecfdf3; border: 1px solid #abefc6; }
 .button { display: inline-block; padding: 10px 15px; color: #fff; background: var(--brand); border: 1px solid var(--brand); border-radius: 6px; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.button:disabled { opacity: 0.55; cursor: not-allowed; }
+.button-block { width: 100%; text-align: center; }
 .button-secondary { color: var(--ink); background: #fff; border-color: var(--line); }
 .button-danger { color: #b42318; background: #fff; border-color: #fda29b; }
 .button-small { padding: 6px 9px; font-size: 14px; }
@@ -69,6 +72,15 @@ th { background: #eef2f7; font-size: 14px; }
 .skill-list { margin-top: 22px; }
 .skill-picker { display: flex; flex-wrap: wrap; gap: 10px 18px; border: 0; padding: 0; }
 .skill-picker legend { width: 100%; margin-bottom: 8px; font-weight: 700; }
+.auth-page { display: flex; justify-content: center; }
+.auth-panel { width: min(520px, 100%); }
+.auth-heading { margin-bottom: 20px; text-align: center; }
+.auth-logo { width: 58px; height: 58px; margin: 0 auto 16px; display: grid; place-items: center; color: #fff; background: var(--brand); border-radius: 50%; font-weight: 800; letter-spacing: 0; }
+.auth-links { display: flex; justify-content: space-between; gap: 14px; margin-top: 16px; }
+.form-footer-link { margin: 16px 0 0; text-align: center; }
+.login-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.password-row { display: flex; gap: 8px; }
+.password-row .form-control { flex: 1; }
 
 @media (max-width: 800px) {
     .nav-row { align-items: flex-start; flex-direction: column; padding-block: 14px; }

@@ -70,6 +70,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         Role adminRole = seedRole(Role.ADMIN);
         Role recruiterRole = seedRole(Role.RECRUITER);
+        seedRole(Role.INTERVIEWER);
         Role candidateRole = seedRole(Role.CANDIDATE);
         seedAdmin(adminRole);
         seedRecruiter(recruiterRole);

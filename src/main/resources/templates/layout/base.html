@@ -17,10 +17,10 @@
             <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">Hồ sơ của tôi</a>
             <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}" th:href="@{/candidates}">Ứng viên</a>
             <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}" th:href="@{/admin/users}">Quản lý người dùng</a>
-            <span class="session-user" th:if="${session.loggedInUser != null}"
-                  th:text="${session.loggedInUser.fullName}">Người dùng</span>
-            <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Đăng nhập</a>
-            <a th:if="${session.loggedInUser != null}" th:href="@{/auth/logout}">Đăng xuất</a>
+            <a class="session-user" th:if="${session.loggedInUser != null}" th:href="@{/profile}"
+               th:text="${session.loggedInUser.fullName}">Người dùng</a>
+            <a th:if="${session.loggedInUser == null}" th:href="@{/login}">Đăng nhập</a>
+            <a th:if="${session.loggedInUser != null}" th:href="@{/logout}">Đăng xuất</a>
         </nav>
     </div>
 </header>

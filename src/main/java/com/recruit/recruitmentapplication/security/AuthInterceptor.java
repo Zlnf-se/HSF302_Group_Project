@@ -20,7 +20,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 : (SessionUser) session.getAttribute(SessionConstants.LOGGED_IN_USER);
 
         if (loggedInUser == null) {
-            response.sendRedirect(request.getContextPath() + "/auth/login");
+            response.sendRedirect(request.getContextPath() + "/login");
             return false;
         }
 
