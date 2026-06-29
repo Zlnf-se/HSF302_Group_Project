@@ -101,4 +101,16 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     @Transactional
     @Query("UPDATE JobPosting jp SET jp.status = :status WHERE jp.id = :id")
     int updateStatus(@Param("id") Long id, @Param("status") JobPosting.PostingStatus status);
+
+    @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company ORDER BY jp.postedDate DESC")
+    List<JobPosting> findAllWithCompany();
+
+    @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE jp.status = :status ORDER BY jp.postedDate DESC")
+    List<JobPosting> findByStatusWithCompany(@Param("status") JobPosting.PostingStatus status);
+
+    @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY jp.postedDate DESC")
+    List<JobPosting> findByTitleContainingWithCompany(@Param("keyword") String keyword);
+
+    @Query("SELECT jp.id, COUNT(a) FROM Application a JOIN a.jobPosting jp GROUP BY jp.id")
+    List<Object[]> countApplicationsPerJob();
 }
