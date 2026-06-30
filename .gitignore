@@ -33,6 +33,10 @@ build/
 ### VS Code ###
 .vscode/
 
+### Local agent config ###
+.claude/
+.playwright-mcp/
+
 # Log file
 *.log
 
