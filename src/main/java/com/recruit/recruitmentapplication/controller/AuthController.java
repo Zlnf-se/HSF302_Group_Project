@@ -7,6 +7,7 @@ import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.service.UserService;
 import com.recruit.recruitmentapplication.util.SessionConstants;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -48,7 +49,15 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(Model model) {
+    public String showLoginForm(Model model, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        SessionUser loggedInUser = session == null
+                ? null
+                : (SessionUser) session.getAttribute(SessionConstants.LOGGED_IN_USER);
+        if (loggedInUser != null) {
+            return redirectForRole(loggedInUser.getRoleName());
+        }
+
         model.addAttribute("loginForm", new LoginForm());
         return "auth/login";
     }
@@ -62,20 +71,31 @@ public class AuthController {
 
         User user = userService.authenticate(form.getUsername(), form.getPassword()).orElse(null);
         if (user == null) {
-            model.addAttribute("loginError", "Sai tài khoản, mật khẩu hoặc tài khoản đã bị khóa");
+            model.addAttribute("loginError", "Incorrect username or password.");
             return "auth/login";
         }
 
-        session.setAttribute(SessionConstants.LOGGED_IN_USER, SessionUser.from(user));
-        if (Role.ADMIN.equals(user.getRole().getName())) {
-            return "redirect:/admin/users";
-        }
-        return "redirect:/";
+        SessionUser sessionUser = SessionUser.from(user);
+        session.setAttribute(SessionConstants.LOGGED_IN_USER, sessionUser);
+        return redirectForRole(sessionUser.getRoleName());
     }
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/auth/login?logout=true";
+    }
+
+    private String redirectForRole(String roleName) {
+        if (Role.ADMIN.equals(roleName)) {
+            return "redirect:/admin/users";
+        }
+        if (Role.HR_MANAGER.equals(roleName) || Role.RECRUITER.equals(roleName)) {
+            return "redirect:/jobs";
+        }
+        if (Role.CANDIDATE.equals(roleName)) {
+            return "redirect:/candidates/me";
+        }
+        return "redirect:/";
     }
 }

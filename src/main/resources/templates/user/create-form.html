@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Create Account')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading">
+        <p class="eyebrow">Admin</p>
+        <h1>Create Account</h1>
+        <p>Create HR Manager or Interviewer accounts. Candidates should use public registration.</p>
+    </div>
+
+    <form class="form-panel" th:action="@{/admin/users}" th:object="${adminUserCreateForm}" method="post">
+        <div class="alert alert-error" th:if="${accountError}" th:text="${accountError}"></div>
+
+        <div class="form-group">
+            <label for="fullName">Full name</label>
+            <input class="form-control" id="fullName" th:field="*{fullName}">
+            <span class="field-error" th:errors="*{fullName}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input class="form-control" id="username" th:field="*{username}" autocomplete="username">
+            <span class="field-error" th:errors="*{username}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input class="form-control" id="email" type="email" th:field="*{email}" autocomplete="email">
+            <span class="field-error" th:errors="*{email}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="roleName">Role</label>
+            <select class="form-control" id="roleName" th:field="*{roleName}">
+                <option value="">Choose role</option>
+                <option th:each="role : ${creationRoles}"
+                        th:value="${role.name}"
+                        th:text="${role.name == 'RECRUITER' ? 'HR Manager' : role.name}"></option>
+            </select>
+            <span class="field-error" th:errors="*{roleName}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="initialPassword">Initial password</label>
+            <input class="form-control" id="initialPassword" type="password"
+                   th:field="*{initialPassword}" autocomplete="new-password">
+            <span class="field-error" th:errors="*{initialPassword}"></span>
+        </div>
+
+        <button class="button" type="submit">Create Account</button>
+        <a class="button button-secondary" th:href="@{/admin/users}">Cancel</a>
+    </form>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

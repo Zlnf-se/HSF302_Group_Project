@@ -1,9 +1,13 @@
 package com.recruit.recruitmentapplication.controller;
 
+import com.recruit.recruitmentapplication.dto.AdminUserCreateForm;
 import com.recruit.recruitmentapplication.dto.UserRoleForm;
+import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
+import com.recruit.recruitmentapplication.entity.User.AccountStatus;
 import com.recruit.recruitmentapplication.service.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/admin/users")
@@ -23,9 +28,54 @@ public class UserController {
     }
 
     @GetMapping
-    public String listUsers(Model model) {
-        model.addAttribute("users", userService.findAll());
+    public String listUsers(@RequestParam(required = false) String q,
+                            @RequestParam(required = false) String role,
+                            @RequestParam(required = false) AccountStatus status,
+                            Model model) {
+        List<User> users = userService.searchUsers(q, role, status);
+        model.addAttribute("users", users);
+        model.addAttribute("q", q);
+        model.addAttribute("selectedRole", role);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("statuses", AccountStatus.values());
+        model.addAttribute("roles", userService.findAllRoles());
+        model.addAttribute("lastActiveAdminId", resolveLastActiveAdminId());
         return "user/list";
+    }
+
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        prepareCreateForm(model, new AdminUserCreateForm());
+        return "user/create-form";
+    }
+
+    @PostMapping
+    public String createAccount(@Valid @ModelAttribute("adminUserCreateForm") AdminUserCreateForm form,
+                                BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            prepareCreateForm(model, form);
+            return "user/create-form";
+        }
+        try {
+            userService.createStaffAccount(form);
+            return "redirect:/admin/users?created=true";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("accountError", ex.getMessage());
+            prepareCreateForm(model, form);
+            return "user/create-form";
+        }
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public String deactivate(@PathVariable Long id) {
+        userService.deactivateUser(id);
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/{id}/unlock")
+    public String unlock(@PathVariable Long id) {
+        userService.unlockUser(id);
+        return "redirect:/admin/users";
     }
 
     @GetMapping("/{id}/toggle-enabled")
@@ -60,5 +110,15 @@ public class UserController {
     public String delete(@PathVariable Long id) {
         userService.delete(id);
         return "redirect:/admin/users";
+    }
+
+    private void prepareCreateForm(Model model, AdminUserCreateForm form) {
+        model.addAttribute("adminUserCreateForm", form);
+        model.addAttribute("creationRoles", userService.findStaffCreationRoles());
+    }
+
+    private Long resolveLastActiveAdminId() {
+        List<User> activeAdmins = userService.searchUsers(null, Role.ADMIN, AccountStatus.ACTIVE);
+        return activeAdmins.size() == 1 ? activeAdmins.get(0).getId() : null;
     }
 }

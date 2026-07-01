@@ -1,28 +1,67 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Đăng nhập')}"></head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('User Login')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
-<main class="container page-content">
-    <div class="page-heading"><p class="eyebrow">Tài khoản</p><h1>Đăng nhập</h1><p>Đăng nhập bằng tài khoản đã đăng ký.</p></div>
-    <form class="form-panel" th:action="@{/auth/login}" th:object="${loginForm}" method="post">
-        <div class="alert alert-success" th:if="${param.registered != null}">Đăng ký thành công. Bạn có thể đăng nhập.</div>
-        <div class="alert alert-success" th:if="${param.logout != null}">Bạn đã đăng xuất.</div>
-        <div class="alert alert-error" th:if="${loginError}" th:text="${loginError}"></div>
-        <div class="form-group">
-            <label for="username">Tên đăng nhập</label>
-            <input class="form-control" id="username" type="text" th:field="*{username}" autocomplete="username">
-            <span class="field-error" th:errors="*{username}"></span>
+<main class="container page-content auth-shell">
+    <section class="auth-panel" aria-labelledby="login-title">
+        <div class="auth-logo" aria-label="TalentHub">
+            <span class="auth-logo-mark">T</span>
+            <span>TalentHub</span>
         </div>
-        <div class="form-group">
-            <label for="password">Mật khẩu</label>
-            <input class="form-control" id="password" type="password" th:field="*{password}" autocomplete="current-password">
-            <span class="field-error" th:errors="*{password}"></span>
+
+        <div class="page-heading auth-heading">
+            <h1 id="login-title">User Login to TalentHub</h1>
+            <p>Sign in with your username or email to continue.</p>
         </div>
-        <button class="button" type="submit">Đăng nhập</button>
-        <a class="button button-secondary" th:href="@{/auth/register}">Tạo tài khoản</a>
-    </form>
+
+        <form class="form-panel auth-form" th:action="@{/auth/login}" th:object="${loginForm}" method="post">
+            <div class="alert alert-success" th:if="${param.registered != null}">
+                Account created successfully. Please sign in.
+            </div>
+            <div class="alert alert-success" th:if="${param.logout != null}">
+                You have been signed out.
+            </div>
+            <div class="alert alert-error" th:if="${loginError}" th:text="${loginError}"></div>
+
+            <div class="form-group">
+                <label for="username">Username or email</label>
+                <input class="form-control" id="username" type="text" th:field="*{username}"
+                       autocomplete="username" placeholder="admin or admin@recruit.com">
+                <span class="field-error" th:errors="*{username}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-field">
+                    <input class="form-control" id="password" type="password" th:field="*{password}"
+                           autocomplete="current-password">
+                    <button class="password-toggle" type="button" aria-controls="password"
+                            aria-label="Show password">Show</button>
+                </div>
+                <span class="field-error" th:errors="*{password}"></span>
+            </div>
+
+            <button class="button button-full" type="submit">User Login</button>
+            <p class="form-footer">
+                New candidate?
+                <a class="text-link" th:href="@{/auth/register}">Create an account</a>
+            </p>
+        </form>
+    </section>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
+<script>
+    const toggle = document.querySelector('.password-toggle');
+    const password = document.querySelector('#password');
+    if (toggle && password) {
+        toggle.addEventListener('click', () => {
+            const isHidden = password.type === 'password';
+            password.type = isHidden ? 'text' : 'password';
+            toggle.textContent = isHidden ? 'Hide' : 'Show';
+            toggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+        });
+    }
+</script>
 </body>
 </html>

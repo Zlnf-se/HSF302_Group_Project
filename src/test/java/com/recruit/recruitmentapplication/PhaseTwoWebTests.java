@@ -90,10 +90,12 @@ class PhaseTwoWebTests {
     void authPagesArePublicAndAdminPageRequiresLogin() throws Exception {
         mockMvc.perform(get("/auth/login"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Đăng nhập")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("User Login to TalentHub")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Username or email")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Show")));
         mockMvc.perform(get("/auth/register"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Đăng ký")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"fullName\"")));
         mockMvc.perform(get("/admin/users"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/auth/login"));
@@ -112,8 +114,55 @@ class PhaseTwoWebTests {
 
         mockMvc.perform(get("/admin/users").session((MockHttpSession) login.getRequest().getSession(false)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Quản lý người dùng")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("admin@recruit.com")));
+    }
+
+    @Test
+    void userCanLoginWithEmailAddress() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .param("username", "admin@recruit.com")
+                        .param("password", "Admin@123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/users"))
+                .andExpect(request().sessionAttribute(SessionConstants.LOGGED_IN_USER,
+                        org.hamcrest.Matchers.instanceOf(SessionUser.class)));
+    }
+
+    @Test
+    void authenticatedUsersOpeningLoginAreRedirectedByRole() throws Exception {
+        MockHttpSession candidate = new MockHttpSession();
+        candidate.setAttribute(SessionConstants.LOGGED_IN_USER,
+                new SessionUser(10L, "candidate", "Candidate User", Role.CANDIDATE));
+        mockMvc.perform(get("/auth/login").session(candidate))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/candidates/me"));
+
+        MockHttpSession recruiter = new MockHttpSession();
+        recruiter.setAttribute(SessionConstants.LOGGED_IN_USER,
+                new SessionUser(11L, "recruiter", "Recruiter User", Role.RECRUITER));
+        mockMvc.perform(get("/auth/login").session(recruiter))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/jobs"));
+    }
+
+    @Test
+    void loginFailureUsesGenericErrorMessage() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .param("username", "missing@example.com")
+                        .param("password", "wrong-password"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Incorrect username or password.")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("locked"))));
+    }
+
+    @Test
+    void candidateLoginRedirectsToOwnProfileArea() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .param("username", "alice")
+                        .param("password", "Alice@123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/candidates/me"));
     }
 
     @Test
