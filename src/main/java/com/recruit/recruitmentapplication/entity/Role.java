@@ -11,7 +11,9 @@ import jakarta.persistence.Table;
 @Table(name = "roles")
 public class Role {
     public static final String ADMIN = "ADMIN";
+    public static final String HR_MANAGER = "HR_MANAGER";
     public static final String RECRUITER = "RECRUITER";
+    public static final String INTERVIEWER = "INTERVIEWER";
     public static final String CANDIDATE = "CANDIDATE";
 
     @Id

@@ -147,5 +147,5 @@ public class JobPosting {
     public int hashCode() { return getClass().hashCode(); }
 
     public enum JobType { FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP, REMOTE }
-    public enum PostingStatus { OPEN, CLOSED, DRAFT }
+    public enum PostingStatus { OPEN, ACTIVE, CLOSED, DRAFT }
 }

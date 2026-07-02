@@ -89,6 +89,17 @@ public class Application {
     public int hashCode() { return getClass().hashCode(); }
 
     public enum ApplicationStatus {
-        SUBMITTED, UNDER_REVIEW, SHORTLISTED, INTERVIEW_SCHEDULED, OFFERED, REJECTED, WITHDRAWN
+        SUBMITTED,
+        APPLIED,
+        UNDER_REVIEW,
+        SCREENING,
+        SHORTLISTED,
+        INTERVIEW,
+        INTERVIEW_SCHEDULED,
+        OFFER,
+        OFFERED,
+        HIRED,
+        REJECTED,
+        WITHDRAWN
     }
 }
